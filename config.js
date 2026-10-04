@@ -9,5 +9,5 @@ window.SIASCLOUD_CONFIG = {
   appName: "SiasCloud ERP",
   storeFunction: "siascloud-erp",
   storeSlug: "",
-  version: "3.2.5"
+  version: "3.2.4"
 };

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#2563eb">
   <title>Tienda · SiasCloud</title>
   <link rel="icon" href="favicon.png">
-  <link rel="stylesheet" href="tienda.css?v=3.2.5">
+  <link rel="stylesheet" href="tienda.css?v=3.2.6">
 </head>
 <body>
   <div id="storeToast" class="store-toast" role="status" aria-live="polite"></div>
@@ -32,7 +32,7 @@
   <dialog id="checkoutDialog" class="checkout-dialog"><div class="dialog-heading"><div><span class="eyebrow">UN PASO MÁS</span><h2>Enviar solicitud de pedido</h2></div><button data-close="checkoutDialog" type="button" class="dialog-close" aria-label="Cerrar formulario">×</button></div><form id="checkoutForm"><div class="checkout-fields"><label>Nombre completo<input name="name" required maxlength="160" autocomplete="name"></label><label>Correo<input name="email" type="email" required maxlength="240" autocomplete="email"></label><label>Teléfono<input name="phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="+56 9 1234 5678"></label><label>Entrega<select name="delivery" id="checkoutDelivery"><option value="RETIRO">Retiro</option><option value="DESPACHO">Despacho</option></select></label><label class="delivery-address hidden">Dirección<input name="address" maxlength="300" autocomplete="street-address"></label><label class="delivery-address hidden">Comuna<input name="commune" maxlength="100" autocomplete="address-level2"></label><label class="full">Observaciones<textarea name="notes" rows="3" maxlength="2000" placeholder="Cuéntanos si tienes alguna indicación especial"></textarea></label><label class="bot-field" aria-hidden="true">Sitio web<input name="website" tabindex="-1" autocomplete="off"></label></div><div class="checkout-total"><span>Total de productos</span><strong id="checkoutTotal"></strong></div><p class="order-explanation">Esta es una solicitud de pedido. Nuestro equipo confirmará disponibilidad, entrega y forma de pago. El costo de despacho se coordina por separado.</p><label class="terms-check"><input name="accept_terms" type="checkbox" required><span>Acepto las condiciones y el uso de mis datos para gestionar esta solicitud.</span></label><div id="checkoutError" class="checkout-error" role="alert"></div><button id="submitOrder" class="button primary full-button" type="submit">Enviar solicitud</button></form></dialog>
   <dialog id="termsDialog" class="terms-dialog"><div class="dialog-heading"><h2>Condiciones</h2><button data-close="termsDialog" type="button" class="dialog-close" aria-label="Cerrar condiciones">×</button></div><p id="storeTerms"></p></dialog>
   <dialog id="successDialog" class="success-dialog"><div class="success-symbol" aria-hidden="true">✓</div><h2>Solicitud recibida</h2><p>Tu número de referencia es</p><strong id="successNumber"></strong><p id="successTotal"></p><p>Te contactaremos para confirmar disponibilidad, entrega y pago.</p><button data-close="successDialog" type="button" class="button primary">Seguir explorando</button></dialog>
-  <script src="config.js?v=3.2.5"></script>
-  <script src="tienda.js?v=3.2.5"></script>
+  <script src="config.js?v=3.2.6"></script>
+  <script src="tienda.js?v=3.2.6"></script>
 </body>
 </html>

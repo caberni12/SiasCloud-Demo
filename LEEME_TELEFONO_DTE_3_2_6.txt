@@ -1,0 +1,50 @@
+SIASCLOUD 3.2.6 - TELEFONO EN DOCUMENTOS TRIBUTARIOS
+
+ACTUALIZACION NECESARIA
+1. En el SQL Editor de Supabase, ejecutar ACTUALIZACION_TELEFONO_DTE_V3_2_6.sql.
+2. En la Edge Function existente siascloud-erp, reemplazar el codigo con
+   supabase/functions/siascloud-erp/index.ts y desplegar la funcion.
+   Es un unico index.ts. No crear una segunda funcion ni cambiar los secretos existentes.
+3. Publicar el frontend de este ZIP en la raiz del repositorio de GitHub.
+   index.html debe quedar en la raiz. Recargar el sitio con Ctrl+F5.
+   Subir archivos a GitHub NO actualiza el backend de Supabase.
+4. En Facturacion.cl, revisar Administrador > Integracion > Configuracion >
+   Campos de Impreso Adicional. El adicional A2 debe ser alfanumerico y estar
+   vinculado a la etiqueta Telefono del formato personalizado de factura/boleta.
+   Si ese impreso usa otro adicional, ajustar su vinculacion con Facturacion.cl.
+   SiasCloud no puede confirmar ni cambiar esa configuracion de tu cuenta.
+
+USO
+- En el modal principal de emision, seleccionar la venta y revisar el campo Telefono.
+- En el POS, el mismo modal de cobro contiene el campo Telefono.
+- El numero se carga de la ficha actual del cliente; si falta, se usa el contacto web.
+- Se puede corregir para esa emision sin abrir otro modal. Ese cambio no modifica
+  la ficha del cliente; para cambiarla permanentemente, editar el cliente.
+- El telefono se envia en Contacto y A2, respetando NodoA para boletas y NodosA
+  para facturas, guias y notas. Un contacto largo ya no corta el numero.
+- El numero enviado se conserva en el DTE. Los tickets termicos lo muestran
+  tambien cuando el encabezado recibido del proveedor no lo incluye.
+- Si el backend instalado no admite este flujo, se indica la actualizacion pendiente
+  antes de enviar una nueva emision al proveedor.
+
+PDF A4 Y DOCUMENTOS ANTERIORES
+El PDF A4 es el original de Facturacion.cl. Su campo Telefono depende del impreso
+personalizado y de la vinculacion A2 de ese proveedor. No se superpone texto ni se
+altera el PDF oficial. Los adicionales de impresion no son campos tributarios del SII.
+Un documento ya emitido se vuelve a imprimir con su mismo folio. Esta actualizacion
+no cambia el XML/PDF anterior ni crea otro folio para completar el telefono.
+
+VERIFICACION
+Pruebas locales: XML de tipos 33, 34, 39, 41, 52, 56 y 61; telefono completo;
+caracteres especiales; ficha actual; contacto web; numero editado; registro previo
+al envio; reutilizacion del folio; detencion ante errores; callbacks de los modales
+y POS con DOM simulado; tickets sin telefono y sin duplicados.
+Las pruebas de emision usaron un proveedor simulado. No se emitieron documentos
+reales ni se verifico el formato de tu cuenta de Facturacion.cl.
+Para confirmar el PDF, usar una nueva emision en ambiente PRUEBA despues de los
+pasos de actualizacion. Un PDF de un folio anterior no demuestra este cambio.
+
+MANUALES CONSULTADOS
+https://www.facturacion.cl/manualintegracion/archivofacturaelectronica.php
+https://www.facturacion.cl/manualintegracion/archivoboletaintegracion.php
+https://www.facturacion.cl/manualintegracion/apirestintegracion.php
