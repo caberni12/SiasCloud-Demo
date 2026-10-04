@@ -1,0 +1,915 @@
+{
+  "version": "3.1.6",
+  "maxRows": 100000,
+  "maxFileBytes": 52428800,
+  "maxCells": 2000000,
+  "tables": [
+    {
+      "key": "Empresa",
+      "db": "sias_companies",
+      "permission": "COMPANY_MANAGE",
+      "singleton": true,
+      "fields": {
+        "rut": {
+          "label": "RUT",
+          "type": "rut",
+          "maxLength": 30
+        },
+        "legal_name": {
+          "label": "Razón social",
+          "type": "text",
+          "maxLength": 180,
+          "required": true
+        },
+        "trade_name": {
+          "label": "Nombre comercial",
+          "type": "text",
+          "maxLength": 160
+        },
+        "business_activity": {
+          "label": "Giro",
+          "type": "text",
+          "maxLength": 200
+        },
+        "email": {
+          "label": "Correo",
+          "type": "email",
+          "maxLength": 240
+        },
+        "phone": {
+          "label": "Teléfono",
+          "type": "text",
+          "maxLength": 40
+        },
+        "address": {
+          "label": "Dirección",
+          "type": "text",
+          "maxLength": 300
+        },
+        "commune": {
+          "label": "Comuna",
+          "type": "text",
+          "maxLength": 100
+        },
+        "city": {
+          "label": "Ciudad",
+          "type": "text",
+          "maxLength": 100
+        },
+        "region": {
+          "label": "Región",
+          "type": "text",
+          "maxLength": 100
+        },
+        "website": {
+          "label": "Sitio web",
+          "type": "url"
+        },
+        "logo_url": {
+          "label": "Logo URL",
+          "type": "url"
+        }
+      }
+    },
+    {
+      "key": "Bodegas",
+      "db": "sias_warehouses",
+      "permission": "INVENTORY_MANAGE",
+      "identity": [
+        "code"
+      ],
+      "fields": {
+        "code": {
+          "label": "Código bodega",
+          "type": "text",
+          "maxLength": 40,
+          "required": true
+        },
+        "name": {
+          "label": "Nombre",
+          "type": "text",
+          "maxLength": 160,
+          "required": true
+        },
+        "address": {
+          "label": "Dirección",
+          "type": "text",
+          "maxLength": 300
+        },
+        "commune": {
+          "label": "Comuna",
+          "type": "text",
+          "maxLength": 100
+        },
+        "city": {
+          "label": "Ciudad",
+          "type": "text",
+          "maxLength": 100
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        }
+      }
+    },
+    {
+      "key": "Proveedores",
+      "db": "sias_suppliers",
+      "permission": "SUPPLIER_MANAGE",
+      "identity": [
+        "rut",
+        "import_code"
+      ],
+      "fields": {
+        "import_code": {
+          "label": "Código proveedor",
+          "type": "text",
+          "maxLength": 80
+        },
+        "rut": {
+          "label": "RUT",
+          "type": "rut",
+          "maxLength": 30
+        },
+        "legal_name": {
+          "label": "Razón social",
+          "type": "text",
+          "maxLength": 180,
+          "required": true
+        },
+        "trade_name": {
+          "label": "Nombre comercial",
+          "type": "text",
+          "maxLength": 160
+        },
+        "business_activity": {
+          "label": "Giro",
+          "type": "text",
+          "maxLength": 200
+        },
+        "email": {
+          "label": "Correo",
+          "type": "email",
+          "maxLength": 240
+        },
+        "phone": {
+          "label": "Teléfono",
+          "type": "text",
+          "maxLength": 40
+        },
+        "address": {
+          "label": "Dirección",
+          "type": "text",
+          "maxLength": 300
+        },
+        "commune": {
+          "label": "Comuna",
+          "type": "text",
+          "maxLength": 100
+        },
+        "city": {
+          "label": "Ciudad",
+          "type": "text",
+          "maxLength": 100
+        },
+        "contact_name": {
+          "label": "Contacto",
+          "type": "text",
+          "maxLength": 160
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        },
+        "notes": {
+          "label": "Notas",
+          "type": "text",
+          "maxLength": 2000
+        }
+      }
+    },
+    {
+      "key": "Clientes",
+      "db": "sias_customers",
+      "permission": "CUSTOMER_MANAGE",
+      "identity": [
+        "rut",
+        "import_code"
+      ],
+      "fields": {
+        "import_code": {
+          "label": "Código cliente",
+          "type": "text",
+          "maxLength": 80
+        },
+        "rut": {
+          "label": "RUT",
+          "type": "rut",
+          "maxLength": 30
+        },
+        "legal_name": {
+          "label": "Razón social",
+          "type": "text",
+          "maxLength": 180,
+          "required": true
+        },
+        "trade_name": {
+          "label": "Nombre comercial",
+          "type": "text",
+          "maxLength": 160
+        },
+        "business_activity": {
+          "label": "Giro",
+          "type": "text",
+          "maxLength": 200
+        },
+        "email": {
+          "label": "Correo",
+          "type": "email",
+          "maxLength": 240
+        },
+        "phone": {
+          "label": "Teléfono",
+          "type": "text",
+          "maxLength": 40
+        },
+        "address": {
+          "label": "Dirección",
+          "type": "text",
+          "maxLength": 300
+        },
+        "commune": {
+          "label": "Comuna",
+          "type": "text",
+          "maxLength": 100
+        },
+        "city": {
+          "label": "Ciudad",
+          "type": "text",
+          "maxLength": 100
+        },
+        "contact_name": {
+          "label": "Contacto",
+          "type": "text",
+          "maxLength": 160
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        },
+        "notes": {
+          "label": "Notas",
+          "type": "text",
+          "maxLength": 2000
+        },
+        "region": {
+          "label": "Región",
+          "type": "text",
+          "maxLength": 100
+        },
+        "credit_limit": {
+          "label": "Límite crédito",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "wholesale": {
+          "label": "Mayorista",
+          "type": "bool"
+        }
+      }
+    },
+    {
+      "key": "Responsables",
+      "db": "sias_staff",
+      "permission": "SETTINGS_MANAGE",
+      "identity": [
+        "import_code",
+        "name"
+      ],
+      "fields": {
+        "import_code": {
+          "label": "Código responsable",
+          "type": "text",
+          "maxLength": 80
+        },
+        "name": {
+          "label": "Nombre",
+          "type": "text",
+          "maxLength": 160,
+          "required": true
+        },
+        "roles": {
+          "label": "Funciones",
+          "type": "roles"
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        }
+      }
+    },
+    {
+      "key": "Productos",
+      "db": "sias_products",
+      "permission": "PRODUCT_MANAGE",
+      "identity": [
+        "sku"
+      ],
+      "fields": {
+        "sku": {
+          "label": "SKU",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "name": {
+          "label": "Nombre",
+          "type": "text",
+          "maxLength": 180,
+          "required": true
+        },
+        "barcode": {
+          "label": "Código barras",
+          "type": "text",
+          "maxLength": 80
+        },
+        "description": {
+          "label": "Descripción",
+          "type": "text",
+          "maxLength": 2000
+        },
+        "category": {
+          "label": "Categoría",
+          "type": "text",
+          "maxLength": 120
+        },
+        "brand": {
+          "label": "Marca",
+          "type": "text",
+          "maxLength": 120
+        },
+        "unit": {
+          "label": "Unidad",
+          "type": "unit"
+        },
+        "product_kind": {
+          "label": "Tipo producto",
+          "type": "kind"
+        },
+        "cost": {
+          "label": "Costo",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "price": {
+          "label": "Precio venta",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "wholesale_price": {
+          "label": "Precio mayorista",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "tax_rate": {
+          "label": "IVA porcentaje",
+          "type": "number",
+          "min": 0,
+          "max": 100
+        },
+        "exempt": {
+          "label": "Exento",
+          "type": "bool"
+        },
+        "min_stock": {
+          "label": "Stock mínimo",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "max_stock": {
+          "label": "Stock máximo",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "pack_quantity": {
+          "label": "Cantidad por caja",
+          "type": "number",
+          "min": 0.0001,
+          "max": 1000000
+        },
+        "pallet_boxes": {
+          "label": "Cajas por pallet",
+          "type": "integer",
+          "min": 1,
+          "max": 1000000
+        },
+        "weight_kg": {
+          "label": "Peso kg",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "length_cm": {
+          "label": "Largo cm",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "width_cm": {
+          "label": "Ancho cm",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "height_cm": {
+          "label": "Alto cm",
+          "type": "number",
+          "min": 0,
+          "max": 1000000
+        },
+        "fractional": {
+          "label": "Fraccionable",
+          "type": "bool"
+        },
+        "image_url": {
+          "label": "Imagen URL",
+          "type": "url"
+        },
+        "featured": {
+          "label": "Destacado",
+          "type": "bool"
+        },
+        "public_visible": {
+          "label": "Visible tienda",
+          "type": "bool"
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        },
+        "parent_sku": {
+          "label": "SKU padre",
+          "type": "text",
+          "maxLength": 80,
+          "virtual": true
+        },
+        "supplier_rut": {
+          "label": "RUT proveedor",
+          "type": "rut",
+          "virtual": true
+        }
+      }
+    },
+    {
+      "key": "Atributos",
+      "db": "sias_products",
+      "permission": "PRODUCT_MANAGE",
+      "special": true,
+      "fields": {
+        "sku": {
+          "label": "SKU",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "attribute": {
+          "label": "Atributo",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "value": {
+          "label": "Valor",
+          "type": "text",
+          "maxLength": 300,
+          "required": true
+        }
+      }
+    },
+    {
+      "key": "ListasPrecios",
+      "db": "sias_price_lists",
+      "permission": "PRODUCT_MANAGE",
+      "identity": [
+        "import_code",
+        "name"
+      ],
+      "fields": {
+        "import_code": {
+          "label": "Código lista",
+          "type": "text",
+          "maxLength": 80
+        },
+        "name": {
+          "label": "Nombre lista",
+          "type": "text",
+          "maxLength": 160,
+          "required": true
+        },
+        "active": {
+          "label": "Activo",
+          "type": "bool"
+        }
+      }
+    },
+    {
+      "key": "Precios",
+      "db": "sias_price_list_items",
+      "permission": "PRODUCT_MANAGE",
+      "special": true,
+      "fields": {
+        "list": {
+          "label": "Lista",
+          "type": "text",
+          "maxLength": 160,
+          "required": true
+        },
+        "sku": {
+          "label": "SKU",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "price": {
+          "label": "Precio",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000,
+          "required": true
+        }
+      }
+    },
+    {
+      "key": "Recetas",
+      "db": "sias_product_recipe",
+      "permission": "PRODUCT_MANAGE",
+      "special": true,
+      "fields": {
+        "sku": {
+          "label": "SKU producto",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "supply_sku": {
+          "label": "SKU insumo",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "quantity": {
+          "label": "Cantidad",
+          "type": "number",
+          "min": 0.0001,
+          "max": 1000000,
+          "required": true
+        },
+        "unit": {
+          "label": "Unidad",
+          "type": "unit"
+        }
+      }
+    },
+    {
+      "key": "StockInicial",
+      "db": "sias_stock",
+      "permission": "INVENTORY_MANAGE",
+      "special": true,
+      "fields": {
+        "sku": {
+          "label": "SKU",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "warehouse": {
+          "label": "Bodega",
+          "type": "text",
+          "maxLength": 40,
+          "required": true
+        },
+        "quantity": {
+          "label": "Cantidad",
+          "type": "number",
+          "min": 0,
+          "max": 1000000,
+          "required": true
+        }
+      }
+    },
+    {
+      "key": "Documentos",
+      "db": "sias_documents",
+      "permission": "SALES_MANAGE",
+      "special": true,
+      "fields": {
+        "import_code": {
+          "label": "Referencia",
+          "type": "text",
+          "maxLength": 100,
+          "required": true
+        },
+        "document_type": {
+          "label": "Tipo documento",
+          "type": "document",
+          "required": true
+        },
+        "issue_date": {
+          "label": "Fecha",
+          "type": "date",
+          "required": true
+        },
+        "due_date": {
+          "label": "Vencimiento",
+          "type": "date"
+        },
+        "customer_rut": {
+          "label": "RUT cliente",
+          "type": "rut",
+          "virtual": true
+        },
+        "supplier_rut": {
+          "label": "RUT proveedor",
+          "type": "rut",
+          "virtual": true
+        },
+        "warehouse": {
+          "label": "Bodega",
+          "type": "text",
+          "maxLength": 40,
+          "virtual": true
+        },
+        "notes": {
+          "label": "Notas",
+          "type": "text",
+          "maxLength": 2000
+        }
+      }
+    },
+    {
+      "key": "DetalleDocumentos",
+      "db": "sias_document_items",
+      "permission": "SALES_MANAGE",
+      "special": true,
+      "fields": {
+        "document": {
+          "label": "Referencia documento",
+          "type": "text",
+          "maxLength": 100,
+          "required": true
+        },
+        "line_no": {
+          "label": "Línea",
+          "type": "integer",
+          "min": 1,
+          "max": 200,
+          "required": true
+        },
+        "sku": {
+          "label": "SKU",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "quantity": {
+          "label": "Cantidad",
+          "type": "number",
+          "min": 0.0001,
+          "max": 1000000,
+          "required": true
+        },
+        "unit_price": {
+          "label": "Precio unitario",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "discount": {
+          "label": "Descuento",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "tax_rate": {
+          "label": "IVA porcentaje",
+          "type": "number",
+          "min": 0,
+          "max": 100
+        },
+        "exempt": {
+          "label": "Exento",
+          "type": "bool"
+        }
+      }
+    },
+    {
+      "key": "RCV",
+      "db": "sias_rcv_rows",
+      "permission": "RCV_MANAGE",
+      "special": true,
+      "fields": {
+        "book": {
+          "label": "Libro",
+          "type": "book",
+          "required": true
+        },
+        "document_type": {
+          "label": "Tipo DTE",
+          "type": "integer",
+          "min": 1,
+          "max": 999,
+          "required": true
+        },
+        "folio": {
+          "label": "Folio",
+          "type": "text",
+          "maxLength": 80,
+          "required": true
+        },
+        "rut": {
+          "label": "RUT",
+          "type": "rut",
+          "required": true
+        },
+        "legal_name": {
+          "label": "Razón social",
+          "type": "text",
+          "maxLength": 180
+        },
+        "issue_date": {
+          "label": "Fecha",
+          "type": "date",
+          "required": true
+        },
+        "net": {
+          "label": "Neto",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "exempt": {
+          "label": "Exento",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "tax": {
+          "label": "IVA",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000
+        },
+        "total": {
+          "label": "Total",
+          "type": "number",
+          "min": 0,
+          "max": 1000000000000,
+          "required": true
+        }
+      }
+    },
+    {
+      "key": "Tienda",
+      "db": "sias_store_settings",
+      "permission": "SETTINGS_MANAGE",
+      "singleton": true,
+      "fields": {
+        "slug": {
+          "label": "Identificador tienda",
+          "type": "text",
+          "maxLength": 100,
+          "required": true
+        },
+        "enabled": {
+          "label": "Habilitada",
+          "type": "bool"
+        },
+        "title": {
+          "label": "Título",
+          "type": "text",
+          "maxLength": 160
+        },
+        "tagline": {
+          "label": "Subtítulo",
+          "type": "text",
+          "maxLength": 300
+        },
+        "hero_title": {
+          "label": "Título principal",
+          "type": "text",
+          "maxLength": 160
+        },
+        "hero_text": {
+          "label": "Texto principal",
+          "type": "text",
+          "maxLength": 2000
+        },
+        "about_title": {
+          "label": "Título nosotros",
+          "type": "text",
+          "maxLength": 160
+        },
+        "about_text": {
+          "label": "Texto nosotros",
+          "type": "text",
+          "maxLength": 4000
+        },
+        "delivery_text": {
+          "label": "Texto despacho",
+          "type": "text",
+          "maxLength": 4000
+        },
+        "terms": {
+          "label": "Condiciones",
+          "type": "text",
+          "maxLength": 6000
+        },
+        "logo_url": {
+          "label": "Logo URL",
+          "type": "url"
+        },
+        "hero_image": {
+          "label": "Imagen principal URL",
+          "type": "url"
+        },
+        "primary_color": {
+          "label": "Color principal",
+          "type": "color"
+        },
+        "whatsapp": {
+          "label": "WhatsApp",
+          "type": "text",
+          "maxLength": 40
+        },
+        "contact_email": {
+          "label": "Correo contacto",
+          "type": "email"
+        },
+        "contact_address": {
+          "label": "Dirección contacto",
+          "type": "text",
+          "maxLength": 300
+        },
+        "allow_orders": {
+          "label": "Permitir pedidos",
+          "type": "bool"
+        },
+        "show_stock": {
+          "label": "Mostrar stock",
+          "type": "bool"
+        },
+        "hide_unavailable": {
+          "label": "Ocultar agotados",
+          "type": "bool"
+        },
+        "warehouse": {
+          "label": "Bodega",
+          "type": "text",
+          "maxLength": 40,
+          "virtual": true
+        }
+      }
+    },
+    {
+      "key": "Folios",
+      "db": "sias_sequences",
+      "permission": "SETTINGS_MANAGE",
+      "special": true,
+      "fields": {
+        "code": {
+          "label": "Código",
+          "type": "text",
+          "maxLength": 50,
+          "required": true
+        },
+        "prefix": {
+          "label": "Prefijo",
+          "type": "text",
+          "maxLength": 30
+        },
+        "current_value": {
+          "label": "Último número",
+          "type": "integer",
+          "min": 0,
+          "max": 1000000000,
+          "required": true
+        },
+        "padding": {
+          "label": "Dígitos",
+          "type": "integer",
+          "min": 1,
+          "max": 12
+        }
+      }
+    }
+  ],
+  "maxExpandedBytes": 209715200,
+  "batchRows": 500,
+  "atomicRows": 5000
+}

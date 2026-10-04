@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#006CFF">
+  <title>SiasCloud ERP</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="styles.css?v=3.2.5">
+  <link rel="stylesheet" href="operations.css?v=3.2.5">
+  <link rel="stylesheet" href="retail.css?v=3.2.5">
+  <link rel="stylesheet" href="pos.css?v=3.2.5">
+  <link rel="stylesheet" href="importers.css?v=3.2.5">
+</head>
+<body>
+
+<div id="erpSplash" class="app-splash" aria-live="polite" aria-label="Cargando SiasCloud ERP">
+  <div class="splash-card">
+    <div class="splash-orbit">
+      <span class="splash-ring ring-one"></span>
+      <div class="splash-logo-box"><img src="siascloud-logo.png" alt="SiasCloud ERP"></div>
+    </div>
+    <strong>SiasCloud ERP</strong>
+    <span>Business Suite</span>
+    <p data-splash-message>Conectando con SiasCloud ERP…</p>
+    <progress data-splash-progress hidden aria-label="Progreso de la operación"></progress>
+    <button data-splash-pause class="btn secondary" type="button" hidden>Pausar carga</button>
+  </div>
+</div>
+<div id="toast" class="toast"></div>
+<section id="boot" class="auth-page">
+  <div class="auth-card">
+    <img class="auth-logo" src="siascloud-logo.png" alt="SiasCloud ERP">
+    <div id="bootLoading" class="center"><span class="spinner"></span><p>Conectando con SiasCloud ERP…</p></div>
+    <form id="serverForm" class="hidden form-stack">
+      <h2>Conectar servidor</h2>
+      <p>Indica la URL de conexión de tu servidor SiasCloud.</p>
+      <label>URL Functions<input name="functions_url" required placeholder="https://TU-PROYECTO.supabase.co/functions/v1"></label>
+      <button class="btn primary" type="submit">Guardar y comprobar</button>
+      <small>La URL queda guardada solo en este navegador. No ingreses claves privadas en este campo.</small>
+    </form>
+    <form id="setupForm" class="hidden form-stack">
+      <h2>Primera configuración</h2>
+      <p>El sistema está vacío. Crea la empresa principal y la clave del primer administrador.</p>
+      <label>Razón social<input name="company_name" required maxlength="200"></label>
+      <label>RUT empresa<input name="company_rut" maxlength="30" placeholder="76.123.456-7"></label>
+      <label>Nombre administrador<input name="full_name" required maxlength="160"></label>
+      <label>Correo administrador<input name="email" type="email" required autocomplete="username"></label>
+      <label>Clave inicial<div class="password-field"><input id="setupPassword" name="password" type="password" minlength="10" required autocomplete="new-password" placeholder="Mayúscula + minúscula + número"><button class="password-toggle" type="button" data-password-toggle="#setupPassword" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
+      <button class="btn primary" type="submit">Crear SiasCloud ERP</button>
+      <small>El acceso se protege con sesión segura y permisos por empresa.</small>
+    </form>
+    <form id="loginForm" class="hidden form-stack">
+      <h2>Iniciar sesión</h2>
+      <label>Correo<input name="email" type="email" required autocomplete="username"></label>
+      <label>Clave<div class="password-field"><input id="erpLoginPassword" name="password" type="password" required autocomplete="current-password"><button class="password-toggle" type="button" data-password-toggle="#erpLoginPassword" aria-label="Mostrar contraseña"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div></label>
+      <button class="btn primary" type="submit">Ingresar</button>
+      <button id="changeServerBtn" class="btn secondary" type="button">Cambiar servidor</button>
+      <small>SiasCloud ERP · Acceso seguro</small>
+      <a class="btn secondary" href="tienda.html">Visitar sitio para clientes</a>
+    </form>
+    <div id="bootMessage" class="message"></div>
+  </div>
+</section>
+
+<div id="app" class="app hidden">
+  <aside id="sidebar" class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true"><img src="siascloud-icon.png" alt=""></div>
+      <div class="brand-copy"><strong>SiasCloud ERP</strong><small>Business Suite</small></div>
+      <button id="sidebarMenuBtn" class="sidebar-menu-toggle" type="button" aria-label="Alternar menú" title="Alternar menú"><span></span><span></span><span></span></button>
+    </div>
+    <div class="nav-caption">OPERACIÓN</div>
+    <nav id="nav"></nav>
+    <div class="sidebar-foot">
+      <div id="sessionUser" class="session-card"></div>
+      <div class="sidebar-actions">
+        <button id="changePasswordBtn" class="side-action" type="button"><span class="side-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3"/><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M12 15v2"/></svg></span><span class="side-action-label">Cambiar clave</span></button>
+        <button id="logoutBtn" class="side-action danger-side" type="button"><span class="side-action-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg></span><span class="side-action-label">Cerrar sesión</span></button>
+      </div>
+    </div>
+  </aside>
+  <button id="sidebarBackdrop" class="sidebar-backdrop" type="button" aria-label="Cerrar menú"></button>
+  <main class="workspace">
+    <header class="topbar">
+      <button id="menuBtn" class="icon-btn menu-toggle" type="button" aria-label="Alternar menú"><span></span><span></span><span></span></button>
+      <div class="page-heading"><h1 id="pageTitle">Dashboard</h1><p id="pageSub">Administración central</p></div>
+      <div id="activeCompanyIdentity" class="active-company-identity" aria-label="Empresa conectada">
+        <div class="active-company-logo"><span id="activeCompanyFallback">—</span><img id="activeCompanyLogo" class="hidden" alt="Logo empresa"></div>
+        <div class="active-company-copy"><strong id="activeCompanyName">Empresa</strong><span id="activeCompanyRut">RUT —</span></div>
+      </div>
+      <div class="top-actions">
+        <select id="companySwitcher" class="company-switch hidden" aria-label="Empresa activa"></select>
+        <span class="status-pill"><i class="status-dot"></i> En línea</span>
+        <div class="notification-menu-wrap">
+          <button id="notificationBell" class="icon-btn notification-bell" type="button" title="Notificaciones" aria-label="Notificaciones" aria-expanded="false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/></svg>
+            <span id="notificationBadge" class="notification-badge hidden">0</span>
+          </button>
+          <div id="notificationDropdown" class="notification-dropdown hidden" role="dialog" aria-label="Notificaciones recientes"></div>
+        </div>
+        <button id="profileBtn" class="top-profile-btn" type="button" title="Mi perfil" aria-label="Editar mi perfil"><span id="topProfileAvatar" class="top-profile-avatar">SC</span></button>
+        <button id="refreshBtn" class="icon-btn refresh-btn" title="Actualizar" aria-label="Actualizar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6v5h-5"/><path d="M19.2 14a7.5 7.5 0 1 1-1.5-7.4L20 9"/></svg></button>
+      </div>
+    </header>
+    <section id="content" class="content"></section>
+  </main>
+</div>
+
+<dialog id="modal">
+  <form id="modalForm" class="modal-card">
+    <div class="modal-head"><h3 id="modalTitle"></h3><button id="modalClose" class="icon-btn" type="button">×</button></div>
+    <div id="modalBody"></div>
+    <div id="modalActions" class="modal-actions"><button class="btn secondary" type="button" id="modalCancel">Cancelar</button><button class="btn primary" type="submit">Guardar</button></div>
+  </form>
+</dialog>
+<script src="splash.js?v=3.2.5"></script>
+<script src="config.js?v=3.2.5"></script>
+<script src="operations.js?v=3.2.5"></script>
+<script src="retail-core.js?v=3.2.5"></script>
+<script src="pos-customers.js?v=3.2.5"></script>
+<script src="pos.js?v=3.2.5"></script>
+<script src="retail.js?v=3.2.5"></script>
+<script src="xml-sax.js?v=3.2.5"></script>
+<script src="xlsx-xml-worker.js?v=3.2.5"></script>
+<script src="xlsx-zip-worker.js?v=3.2.5"></script>
+<script src="xlsx-reader.js?v=3.2.5"></script>
+<script src="import-core.js?v=3.2.5"></script>
+<script src="bulk-import.js?v=3.2.5"></script>
+<script src="dte-pdf.js?v=3.2.5"></script>
+<script src="importers.js?v=3.2.5"></script>
+<script src="app.js?v=3.2.5"></script>
+</body>
+</html>
