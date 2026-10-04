@@ -1,0 +1,25 @@
+SIASCLOUD 3.2.6 - CORRECCION DEL BLOQUEO DE ARRANQUE
+
+El mensaje "Backend 3.2.6. Reemplaza index.ts ... por la version 3.2.5" se debia
+a una comprobacion antigua en app.js. El servidor estaba respondiendo.
+
+SI YA DESPLEGASTE EL BACKEND 3.2.6:
+1. Mantener ese index.ts de Supabase.
+2. Reemplazar el frontend del repositorio por el contenido de este ZIP.
+3. Esperar a que termine la publicacion de GitHub Pages y recargar con Ctrl+F5.
+Para esta correccion de conexion no hay cambios de SQL ni de backend.
+
+Archivos del arreglo: config.js, app.js, portal.js, index.html, portal.html y
+tienda.html. El HTML renueva la cache mediante v=3.2.6-conexion1.
+
+La version del frontend se identifica como 3.2.6. La comprobacion usa esa version
+desde config.js; acepta backend 3.2.6 y parches posteriores de la rama 3.2.
+Una incompatibilidad real indica las dos versiones y no se presenta como una
+caida de conexion. El portal aplica la misma regla de compatibilidad.
+
+La correccion de telefono de la entrega anterior permanece incluida. Sus
+requisitos iniciales se describen en LEEME_TELEFONO_DTE_3_2_6.txt.
+
+Verificacion local: arranque instalado, instalacion pendiente, login, sesion
+valida, portal, versiones compatibles/incompatibles y renovacion de cache.
+Se probaron las funciones de arranque con respuestas de servidor simuladas.

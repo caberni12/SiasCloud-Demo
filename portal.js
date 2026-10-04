@@ -287,9 +287,8 @@
     }
     try{
       const s = await api("status");
-      if(String(s.version||"") !== "3.1.7"){
-        $("#loginMessage").textContent = `Backend Portal ${s.version||"sin versión"}. Debes desplegar supabase/functions/siascloud-erp/index.ts v3.1.7.`;
-      }
+      if(typeof cfg.checkBackendVersion!=='function')throw new Error('Actualiza config.js y recarga el sitio con Ctrl+F5.');
+      cfg.checkBackendVersion(s.version);
     }catch(e){
       showLogin(e.message || "No fue posible conectar con el portal.");
       return;

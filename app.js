@@ -143,11 +143,12 @@
     if(!serverUrl()){ showServer(); return; }
     try{
       const s=await call("status");
-      if(s.function_version && s.function_version!=="3.2.5") throw new Error(`Backend ${s.function_version}. Reemplaza index.ts de siascloud-erp por la versión 3.2.5.`);
+      if(typeof cfg.checkBackendVersion!=='function')throw new Error('Actualiza config.js y recarga el sitio con Ctrl+F5.');
+      cfg.checkBackendVersion(s.function_version);
       if(!s.installed){ showSetup(); return; }
       if(state.token){ try{ const me=await call("me"); state.me=me; startApp(); return; }catch{} }
       showLogin();
-    }catch(e){ const m=errorText(e,"Error de conexión"); if(cfg.fixedConnection){ hideAuthForms(); bootMessage(`No fue posible conectar con el servidor configurado: ${m}`); hideErpSplash(); } else { showServer(`No fue posible conectar: ${m}`); } }
+    }catch(e){ const m=errorText(e,"Error de conexión"); if(cfg.fixedConnection){ hideAuthForms(); bootMessage(e.code==='BACKEND_VERSION_INCOMPATIBLE'?m:`No fue posible conectar con el servidor configurado: ${m}`); hideErpSplash(); } else { showServer(e.code==='BACKEND_VERSION_INCOMPATIBLE'?m:`No fue posible conectar: ${m}`); } }
   }
 
   $("#serverForm").addEventListener("submit",async e=>{ e.preventDefault(); const btn=e.submitter; setBusy(btn,true,"Comprobando…"); try{ const v=formData(e.currentTarget).get("functions_url").trim().replace(/\/$/,""); if(!/^https:\/\/.+\/functions\/v1$/i.test(v)) throw new Error("Usa una URL como https://TU-PROYECTO.supabase.co/functions/v1"); localStorage.setItem("sias_functions_url",v); const s=await call("status"); s.installed?showLogin("Servidor conectado correctamente."):showSetup(); }catch(err){bootMessage(errorText(err,"No se pudo completar la operación"))}finally{setBusy(btn,false)} });
