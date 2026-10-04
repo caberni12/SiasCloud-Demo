@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#2563eb">
+  <title>Tienda · SiasCloud</title>
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="tienda.css?v=3.2.5">
+</head>
+<body>
+  <div id="storeToast" class="store-toast" role="status" aria-live="polite"></div>
+  <div class="announcement" id="storeTagline">Bienvenido a nuestra tienda</div>
+  <header class="store-header">
+    <a class="store-brand" href="#inicio"><img id="storeLogo" src="siascloud-logo.png" alt="Logotipo"><span id="storeName">Nuestra tienda</span></a>
+    <nav aria-label="Menú de la tienda"><a href="#catalogo">Productos</a><a href="#nosotros">Nosotros</a><a href="#contacto">Contacto</a></nav>
+    <button id="openCart" class="cart-button" type="button" aria-label="Abrir carrito"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h2l3 12h11l2-8H6M9 21a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm9 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg><span>Carrito</span><b id="cartCount">0</b></button>
+  </header>
+  <main>
+    <section id="storeLoading" class="store-loading"><span class="store-spinner"></span><h1>Cargando catálogo</h1><p>Estamos preparando los productos para ti.</p></section>
+    <section id="storeError" class="store-error hidden" role="alert"><h1>El catálogo aún no está disponible</h1><p id="storeErrorText"></p><button class="button primary" id="storeRetry" type="button">Volver a intentar</button></section>
+    <div id="storeContent" class="hidden">
+      <section id="inicio" class="store-hero"><div class="hero-copy"><span class="eyebrow">BIENVENIDO A NUESTRA TIENDA</span><h1 id="storeHeroTitle">Productos para cada día</h1><p id="storeHeroText"></p><a class="button primary" href="#catalogo">Explorar productos <span aria-hidden="true">→</span></a><div class="hero-assurance"><span>✓ Atención personalizada</span><span>✓ Pedido fácil</span></div></div><div class="hero-media" id="storeHeroMedia"><div class="hero-art"><svg viewBox="0 0 260 260" aria-hidden="true"><path d="m130 46 83 44-83 44-83-44 83-44Z"/><path d="m47 90 83 44v91l-83-44V90Zm83 44 83-44v91l-83 44v-91Z"/><path d="m89 68 83 44v39"/></svg><span>DESCUBRE NUESTRO CATÁLOGO</span></div></div></section>
+      <section id="catalogo" class="catalog-section"><div class="section-heading"><div><span class="eyebrow">ELIGE TUS FAVORITOS</span><h2>Nuestros productos</h2></div><span id="catalogCount" class="muted"></span></div><div class="catalog-toolbar"><label class="search-field"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input id="catalogSearch" type="search" placeholder="Buscar productos" aria-label="Buscar productos"></label><label class="sort-field"><span>Ordenar</span><select id="catalogSort"><option value="featured">Destacados</option><option value="name">Nombre</option><option value="price-asc">Menor precio</option><option value="price-desc">Mayor precio</option></select></label></div><div id="catalogCategories" class="category-tabs" aria-label="Categorías"></div><div id="productGrid" class="product-grid"></div></section>
+      <section id="nosotros" class="about-section"><div><span class="eyebrow">NOSOTROS</span><h2 id="storeAboutTitle">Estamos para ayudarte</h2><p id="storeAboutText"></p></div><div class="delivery-card"><span class="delivery-icon" aria-hidden="true">↗</span><h3>Entrega y retiro</h3><p id="storeDeliveryText">Coordina la entrega o retiro con nuestro equipo al confirmar tu pedido.</p></div></section>
+      <section id="contacto" class="contact-section"><div><span class="eyebrow">CONVERSEMOS</span><h2>¿Necesitas ayuda para elegir?</h2><p>Estamos para responder tus consultas.</p></div><div id="storeContactLinks" class="contact-links"></div></section>
+    </div>
+  </main>
+  <footer class="store-footer"><strong id="storeFooterName">SiasCloud</strong><span id="storeFooterAddress"></span><div><button id="openTerms" type="button" class="text-button">Condiciones</button><a href="portal.html">Portal mayorista</a><a href="index.html">Administración</a></div><small>© <span id="storeYear"></span> · Tienda conectada con SiasCloud ERP</small></footer>
+  <dialog id="productDialog" class="product-dialog"><button class="dialog-close" data-close="productDialog" type="button" aria-label="Cerrar producto">×</button><div id="productDetail"></div></dialog>
+  <dialog id="cartDialog" class="cart-dialog"><div class="dialog-heading"><div><span class="eyebrow">TU SELECCIÓN</span><h2>Carrito de productos</h2></div><button data-close="cartDialog" type="button" class="dialog-close" aria-label="Cerrar carrito">×</button></div><div id="cartItems"></div><div id="cartSummary"></div></dialog>
+  <dialog id="checkoutDialog" class="checkout-dialog"><div class="dialog-heading"><div><span class="eyebrow">UN PASO MÁS</span><h2>Enviar solicitud de pedido</h2></div><button data-close="checkoutDialog" type="button" class="dialog-close" aria-label="Cerrar formulario">×</button></div><form id="checkoutForm"><div class="checkout-fields"><label>Nombre completo<input name="name" required maxlength="160" autocomplete="name"></label><label>Correo<input name="email" type="email" required maxlength="240" autocomplete="email"></label><label>Teléfono<input name="phone" type="tel" required maxlength="40" autocomplete="tel" placeholder="+56 9 1234 5678"></label><label>Entrega<select name="delivery" id="checkoutDelivery"><option value="RETIRO">Retiro</option><option value="DESPACHO">Despacho</option></select></label><label class="delivery-address hidden">Dirección<input name="address" maxlength="300" autocomplete="street-address"></label><label class="delivery-address hidden">Comuna<input name="commune" maxlength="100" autocomplete="address-level2"></label><label class="full">Observaciones<textarea name="notes" rows="3" maxlength="2000" placeholder="Cuéntanos si tienes alguna indicación especial"></textarea></label><label class="bot-field" aria-hidden="true">Sitio web<input name="website" tabindex="-1" autocomplete="off"></label></div><div class="checkout-total"><span>Total de productos</span><strong id="checkoutTotal"></strong></div><p class="order-explanation">Esta es una solicitud de pedido. Nuestro equipo confirmará disponibilidad, entrega y forma de pago. El costo de despacho se coordina por separado.</p><label class="terms-check"><input name="accept_terms" type="checkbox" required><span>Acepto las condiciones y el uso de mis datos para gestionar esta solicitud.</span></label><div id="checkoutError" class="checkout-error" role="alert"></div><button id="submitOrder" class="button primary full-button" type="submit">Enviar solicitud</button></form></dialog>
+  <dialog id="termsDialog" class="terms-dialog"><div class="dialog-heading"><h2>Condiciones</h2><button data-close="termsDialog" type="button" class="dialog-close" aria-label="Cerrar condiciones">×</button></div><p id="storeTerms"></p></dialog>
+  <dialog id="successDialog" class="success-dialog"><div class="success-symbol" aria-hidden="true">✓</div><h2>Solicitud recibida</h2><p>Tu número de referencia es</p><strong id="successNumber"></strong><p id="successTotal"></p><p>Te contactaremos para confirmar disponibilidad, entrega y pago.</p><button data-close="successDialog" type="button" class="button primary">Seguir explorando</button></dialog>
+  <script src="config.js?v=3.2.5"></script>
+  <script src="tienda.js?v=3.2.5"></script>
+</body>
+</html>
