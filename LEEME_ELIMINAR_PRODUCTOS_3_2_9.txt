@@ -1,0 +1,13 @@
+SIASCLOUD 3.2.9 - ELIMINAR PRODUCTOS
+
+1. Ejecutar ACTUALIZACION_ELIMINAR_PRODUCTO_V3_2_9.sql en Supabase SQL Editor.
+2. Reemplazar/desplegar supabase/functions/siascloud-erp/index.ts en la MISMA Edge Function.
+3. Subir los archivos planos de esta carpeta a GitHub.
+4. En Maestro de Productos aparecerá el botón Eliminar para usuarios con permiso PRODUCT_MANAGE.
+
+SEGURIDAD DE TRAZABILIDAD
+- Se permite eliminación definitiva si el producto no fue usado operacionalmente.
+- Se bloquea si tiene movimientos de inventario, documentos, historial de costos, variantes, stock distinto de cero o uso como insumo en recetas.
+- Si está bloqueado, usar Desactivar.
+
+No se crea ninguna Edge Function adicional.

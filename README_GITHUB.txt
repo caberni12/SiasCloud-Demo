@@ -1,4 +1,4 @@
-SIASCLOUD 3.2.8 - GITHUB PLANO / TELEFONO DTE
+SIASCLOUD 3.2.9 - GITHUB PLANO / MAESTRO DE PRODUCTOS
 
 Los archivos web estan en la raiz, listos para publicar en GitHub.
 No subir una carpeta contenedora: index.html debe quedar en la raiz del sitio.
@@ -22,4 +22,13 @@ SiasCloud ya envia el telefono. Para que el PDF A4 oficial lo muestre, la cuenta
 Administrador > Integracion > Configuracion > Campos de Impreso Adicional
 El campo Telefono debe estar asociado al adicional A2.
 
-Version frontend/backend: 3.2.8. Recursos web: 3.2.8-telefono2.
+Version frontend/backend: 3.2.9. Recursos web: 3.2.9-product-delete.
+
+
+CAMBIO 3.2.9 - ELIMINAR PRODUCTOS
+- Maestro de Productos incorpora botón Eliminar para usuarios con PRODUCT_MANAGE.
+- Nuevo endpoint products.delete en la misma Edge Function siascloud-erp.
+- La eliminación es definitiva solo para productos sin historia operacional.
+- Se bloquea el borrado si existen movimientos, documentos, historial de costos, variantes, stock o uso como insumo en recetas.
+- En esos casos el sistema indica usar Desactivar para conservar trazabilidad.
+- Ejecutar ACTUALIZACION_ELIMINAR_PRODUCTO_V3_2_9.sql antes de desplegar el nuevo index.ts.
