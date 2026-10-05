@@ -9,7 +9,7 @@ window.SIASCLOUD_CONFIG = {
   appName: "SiasCloud ERP",
   storeFunction: "siascloud-erp",
   storeSlug: "",
-  version: "3.2.6",
+  version: "3.2.7",
   checkBackendVersion(backendVersion) {
     const parse=value=>{const match=String(value||'').trim().match(/^(\d+)\.(\d+)\.(\d+)$/);return match?match.slice(1).map(Number):null;};
     const frontend=parse(this.version),backend=parse(backendVersion);

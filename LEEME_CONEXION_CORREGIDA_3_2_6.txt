@@ -1,3 +1,5 @@
+HISTORICO 3.2.6. PARA ESTA ENTREGA SEGUIR LEEME_TELEFONO_DTE_3_2_7.txt.
+
 SIASCLOUD 3.2.6 - CORRECCION DEL BLOQUEO DE ARRANQUE
 
 El mensaje "Backend 3.2.6. Reemplaza index.ts ... por la version 3.2.5" se debia

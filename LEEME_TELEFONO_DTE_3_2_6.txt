@@ -1,3 +1,5 @@
+HISTORICO 3.2.6. PARA ESTA ENTREGA SEGUIR LEEME_TELEFONO_DTE_3_2_7.txt.
+
 CORRECCION DE ARRANQUE INCLUIDA: ver LEEME_CONEXION_CORREGIDA_3_2_6.txt.
 Si ya instalaste el backend 3.2.6, este arreglo solo actualiza el frontend.
 

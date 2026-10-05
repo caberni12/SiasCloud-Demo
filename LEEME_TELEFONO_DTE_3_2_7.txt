@@ -1,0 +1,53 @@
+SIASCLOUD 3.2.7 - TELEFONO Y ACTUALIZACION DEL PDF OFICIAL
+
+ACTUALIZAR LOS TRES COMPONENTES
+1. Ejecutar ACTUALIZACION_TELEFONO_DTE_V3_2_7.sql en Supabase.
+2. Reemplazar y desplegar el unico supabase/functions/siascloud-erp/index.ts
+   en la funcion existente siascloud-erp. Mantener los secretos configurados.
+3. Publicar los archivos de la raiz de este ZIP en GitHub y recargar con Ctrl+F5.
+   Subir el ZIP a GitHub no despliega el backend en Supabase.
+   Frontend y backend de esta entrega: 3.2.7.
+
+CAMBIOS
+- Un telefono vacio, null o ausente en la solicitud usa el numero de la ficha
+  actual del cliente; si esta no tiene numero, usa el contacto del pedido web.
+- Un numero escrito en el modal prevalece para esa emision.
+- El telefono va en A2; los adicionales se declaran en orden A1, A2.
+  Facturas usan Adicional/NodosA y boletas Adicional/NodoA.
+- En boletas Contacto conserva exclusivamente el correo de entrega del cliente,
+  segun el manual del proveedor. En facturas Contacto incluye el telefono.
+- El historial de DTE muestra Telefono de emision. Este es el numero guardado
+  al preparar la emision, no el numero actual de una ficha editada posteriormente.
+- La barra del PDF muestra el numero guardado y permite Actualizar PDF.
+  Este boton vuelve a pedir el PDF oficial del mismo folio; no llama a procesar,
+  no reserva un folio y no cambia el XML del documento ya emitido.
+- La copia cedible no reutiliza la copia normal guardada en cache.
+
+COMPROBAR EL CASO DE LA CAPTURA
+1. En Facturacion / DTE, localizar el folio y ver Telefono de emision.
+2. Si muestra Sin registro, el folio no tiene un telefono conservado en SiasCloud.
+   Puede ser una emision antigua anterior al registro del dato o una emision sin
+   telefono. La actualizacion no completa retroactivamente un DTE emitido.
+3. Si muestra el numero correcto y el PDF sigue vacio, revisar en Facturacion.cl:
+   Administrador > Integracion > Configuracion > Campos de Impreso Adicional.
+   El adicional A2 debe estar habilitado como alfanumerico y asociado al campo
+   Telefono del impreso usado por esa cuenta. A2 es el ejemplo del manual; el
+   impreso personalizado debe usar el mismo adicional que envia SiasCloud.
+4. Tras corregir el impreso con el proveedor, usar Actualizar PDF para consultar
+   nuevamente el mismo folio. El boton solo obtiene la copia que entregue el
+   proveedor y no garantiza que este regenere un PDF antiguo.
+5. Para comprobar el envio nuevo, emitir un documento NUEVO en ambiente PRUEBA
+   con un numero visible en el modal. No reemitir un documento productivo ya
+   emitido para intentar completar su telefono.
+
+LIMITES DE LA VERIFICACION
+El codigo, XML, lectura de datos, cache y reimpresion se comprobaron con pruebas
+locales y respuestas simuladas. No se accedio a la cuenta de Facturacion.cl ni
+se comprobo un PDF nuevo de esa cuenta. La captura confirma el campo vacio,
+pero no identifica por si sola el dato enviado ni la configuracion del impreso.
+
+MANUALES
+https://www.facturacion.cl/manualintegracion/archivofacturaelectronica.php
+https://www.facturacion.cl/manualintegracion/archivoboletaintegracion.php
+https://www.facturacion.cl/manualintegracion/ejemplosxml.php
+https://www.facturacion.cl/manualintegracion/apirestintegracion.php

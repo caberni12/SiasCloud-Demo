@@ -1,0 +1,25 @@
+VERIFICACION LOCAL SIASCLOUD 3.2.7
+
+Resultados de esta entrega:
+- 14 pruebas de backend: lectura actual del cliente, entradas vacias/null,
+  contacto web, permisos, aislamiento por empresa, XML, registro previo al
+  proveedor, reutilizacion de folio y detencion ante fallos.
+- 8 pruebas de modales/POS y ticket termico con DOM simulado.
+- 12 pruebas de arranque/versiones de ERP y portal con respuestas simuladas.
+- 15 pruebas de PDF: cache, refresh, cedible, aislamiento por empresa, errores,
+  cambio de sesion, botones del visor y conservacion del mismo folio.
+Total: 49 pruebas del flujo, sin fallos.
+
+Ademas: sintaxis de los archivos web, recursos HTML, una sola funcion index.ts
+ y generacion determinista verificados. XML de tipos 33, 34, 39, 41, 52, 56 y
+ 61 analizado con un parser independiente: telefono A2, A1/A2 ordenados y Contacto.
+
+No se ejecutaron emision real, impresora fisica, pruebas de carga ni consultas
+ a la cuenta de Facturacion.cl o a la base productiva. Los resultados historicos
+ de tests/*-result.txt corresponden a versiones anteriores salvo static-result.txt.
+ La bateria SQL/PGlite completa no se reejecuto en esta revision.
+
+En el ZIP de fuentes:
+  cd tests
+  npm run test:phone
+Se requiere Node.js 24 o posterior. Estas pruebas no necesitan credenciales.

@@ -9,7 +9,7 @@
   if(popup){popup.document.write('<!doctype html><html lang="es"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DTE · SiasCloud</title><body style="margin:0;background:#f3f7fd;font:16px system-ui;color:#14233c"><main style="max-width:640px;margin:12vh auto;padding:28px;background:white;border-radius:20px"><h1 style="font-size:28px">Documento tributario</h1><p data-pdf-status>Preparando documento…</p><button data-pdf-retry hidden style="font:inherit;padding:12px 20px;border:0;border-radius:10px;background:#2563eb;color:white">Consultar nuevamente</button></main></body></html>');popup.document.close();host=popup.document;}
   else{
    let dialog=document.querySelector('#dtePdfViewer');if(!dialog){dialog=document.createElement('dialog');dialog.id='dtePdfViewer';dialog.className='dte-pdf-viewer';dialog.innerHTML='<div class="dte-pdf-head"><strong>Documento tributario</strong><button type="button" class="btn secondary" data-pdf-close>Cerrar</button></div><p data-pdf-status></p><button type="button" class="btn primary" data-pdf-retry hidden>Consultar nuevamente</button><iframe title="Documento tributario" hidden></iframe><a class="btn secondary" data-pdf-download hidden download="Documento_tributario.pdf">Descargar PDF</a>';document.body.appendChild(dialog);dialog.querySelector('[data-pdf-close]').onclick=()=>dialog.close();}
-   host=dialog;dialog.querySelector('iframe').hidden=true;dialog.querySelector('[data-pdf-download]').hidden=true;dialog.querySelector('[data-pdf-retry]').hidden=true;dialog.querySelector('[data-pdf-status]').textContent='Preparando documento…';if(!dialog.open)dialog.showModal();
+   host=dialog;dialog.querySelector('iframe').hidden=true;dialog.querySelector('[data-pdf-download]').hidden=true;dialog.querySelector('[data-pdf-retry]').hidden=true;const refresh=dialog.querySelector('[data-pdf-refresh]');if(refresh)refresh.hidden=true;dialog.querySelector('[data-pdf-status]').textContent='Preparando documento…';if(!dialog.open)dialog.showModal();
   }
   return {popup,host,company:A.state.me?.companyId,token:A.state.token};
  }
@@ -17,14 +17,30 @@
  function release(url){if(activeUrls.delete(url))URL.revokeObjectURL(url);}
  function assertContext(v){if(v.company!==A.state.me?.companyId||v.token!==A.state.token)throw new Error('La sesión o la empresa activa cambió. Abre el documento nuevamente.');}
  async function preferred(dte={}){try{const r=await A.erpCall('printing.config.get'),f=r.formats||{},type=String(dte.document_type||'');return f.tributary?.[type]||(A.state.route==='pos'?(f.defaults?.pos||'80MM'):(f.defaults?.tributary||'A4'));}catch{try{const r=await A.erpCall('billing.config.get'),c=r.config||{};return A.state.route==='pos'?(c.pos_dte_print_format||'80MM'):(c.dte_print_format||'A4');}catch{return 'A4';}}}
- async function showA4(dte,v){
+ function pdfCaption(dte){return `DTE A4 oficial · folio ${dte.folio||'confirmado'} · Teléfono de emisión: ${dte.recipient_phone||'Sin registro'}`;}
+ async function refreshA4(dte,v,button){
+  if(button.disabled)return;button.disabled=true;message(v,'Actualizando el PDF oficial del mismo folio…');
+  try{await showA4(dte,v,true);}catch(error){message(v,A.errorText(error));}finally{button.disabled=false;}
+ }
+ async function showA4(dte,v,refresh=false){
   for(let attempt=0;attempt<5;attempt++){
    if(v.popup?.closed)return false;
-   try{assertContext(v);message(v,`DTE emitido · folio ${dte.folio||'confirmado'}. Preparando A4 oficial…`);const r=await A.erpCall('billing.pdf',{id:dte.id});assertContext(v);
+   try{assertContext(v);message(v,`DTE emitido · folio ${dte.folio||'confirmado'}. Preparando A4 oficial…`);const r=await A.erpCall('billing.pdf',{id:dte.id,...(refresh?{refresh:true}:{})});assertContext(v);Object.assign(dte,r.document||{});
     const base64=String(r.pdf_base64||'').replace(/^data:application\/pdf;base64,/i,'').replace(/\s/g,'');if(base64.length>41943040)throw new Error('El PDF supera el tamaño admitido.');const raw=atob(base64);if(!raw.startsWith('%PDF-'))throw new Error('El proveedor devolvió un PDF inválido.');
     const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0)),url=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));activeUrls.add(url);
-    if(v.popup&&!v.popup.closed){const doc=v.popup.document;doc.title='DTE · folio '+(dte.folio||'confirmado');doc.body.style.cssText='margin:0;font:15px system-ui;display:flex;flex-direction:column;height:100vh;background:#fff;color:#14233c';const header=doc.createElement('header'),title=doc.createElement('strong'),download=doc.createElement('a'),frame=doc.createElement('iframe');header.style.cssText='display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid #dde5f0';title.textContent='DTE A4 oficial · folio '+(dte.folio||'confirmado');download.textContent='Descargar PDF';download.href=url;download.download='DTE_'+(dte.folio||'emitido')+'.pdf';frame.title='PDF del documento tributario';frame.style.cssText='width:100%;flex:1;border:0';frame.src=url;header.append(title,download);doc.body.replaceChildren(header,frame);}
-    else if(!v.popup){const frame=v.host.querySelector('iframe'),link=v.host.querySelector('[data-pdf-download]');frame.src=url;frame.removeAttribute('srcdoc');frame.hidden=false;link.href=url;link.hidden=false;message(v,`DTE A4 oficial · folio ${dte.folio||'confirmado'}`);v.host.addEventListener('close',()=>release(url),{once:true});}else release(url);setTimeout(()=>release(url),900000);return true;
+    if(v.popup&&!v.popup.closed){
+     const doc=v.popup.document;doc.title='DTE · folio '+(dte.folio||'confirmado');doc.body.style.cssText='margin:0;font:15px system-ui;display:flex;flex-direction:column;height:100vh;background:#fff;color:#14233c';
+     const header=doc.createElement('header'),title=doc.createElement('strong'),download=doc.createElement('a'),reload=doc.createElement('button'),frame=doc.createElement('iframe');
+     header.style.cssText='display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:16px 22px;border-bottom:1px solid #dde5f0';title.style.cssText='flex:1;min-width:200px';title.setAttribute('data-pdf-status','');title.textContent=pdfCaption(dte);
+     download.textContent='Descargar PDF';download.href=url;download.download='DTE_'+(dte.folio||'emitido')+'.pdf';
+     reload.type='button';reload.textContent='Actualizar PDF';reload.style.cssText='padding:9px 12px;border:1px solid #cbd5e1;border-radius:8px;background:white;color:#14233c;font:inherit;cursor:pointer';reload.onclick=()=>refreshA4(dte,v,reload);
+     frame.title='PDF del documento tributario';frame.style.cssText='width:100%;flex:1;border:0';frame.src=url;header.append(title,reload,download);doc.body.replaceChildren(header,frame);
+    }else if(!v.popup){
+     const frame=v.host.querySelector('iframe'),link=v.host.querySelector('[data-pdf-download]');frame.src=url;frame.removeAttribute('srcdoc');frame.hidden=false;link.href=url;link.hidden=false;message(v,pdfCaption(dte));
+     let reload=v.host.querySelector('[data-pdf-refresh]');if(!reload){reload=document.createElement('button');reload.type='button';reload.className='btn secondary';reload.setAttribute('data-pdf-refresh','');reload.textContent='Actualizar PDF';v.host.appendChild(reload);}reload.hidden=false;reload.onclick=()=>refreshA4(dte,v,reload);
+     v.host.addEventListener('close',()=>release(url),{once:true});
+    }else{release(url);return false;}
+    if(v.pdfUrl)release(v.pdfUrl);v.pdfUrl=url;setTimeout(()=>release(url),900000);return true;
    }catch(error){if(attempt<4&&/PDF_NO_DISPONIBLE|PDF.*(?:pendiente|no.*disponible)/i.test(error.message)){message(v,'El documento ya fue emitido. Esperando el PDF oficial de Facturacion.cl…');await new Promise(r=>setTimeout(r,500*(attempt+1)));continue;}throw error;}
   }
  }
