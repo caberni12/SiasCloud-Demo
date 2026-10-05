@@ -1,0 +1,100 @@
+{
+  "product": "SiasCloud ERP",
+  "version": "3.3.0",
+  "release_date": "2026-10-05",
+  "base": "3.2.16 + Tienda limpia",
+  "backend_entrypoint": "supabase/functions/siascloud-erp/index.ts",
+  "frontend_entrypoint": "index.html",
+  "store_entrypoint": "tienda.html",
+  "wholesale_portal_entrypoint": "portal.html",
+  "migration_from": "3.2.16",
+  "migration_sql": "MIGRACION_3_2_16_A_3_3_0.sql",
+  "fresh_install_sql": "SQL_MAESTRO_SIASCLOUD_V3_3_0.sql",
+  "cache_bust": "3.3.0-release",
+  "critical_files": {
+    "index.html": {
+      "sha256": "27202f2c566832906248f65608723b8df523edd5b9c9b7780d17e4da92199c90",
+      "bytes": 9244
+    },
+    "config.js": {
+      "sha256": "62267854fcb6112391a920248f15cdf6cc6e3442a885cc3007c47bd1d2d1c5e2",
+      "bytes": 1129
+    },
+    "app.js": {
+      "sha256": "95f2bf70ef1d02648b07e1ed3f1815f8872c7fc176c08100d51f9bf5c32ea005",
+      "bytes": 147339
+    },
+    "operations.js": {
+      "sha256": "7d0d51910ae856fec27979145c8f47f4ead52c9726711b528b09242baee9afc5",
+      "bytes": 98479
+    },
+    "pos.js": {
+      "sha256": "3706d9dc752cea8a3349ed566ddadb53c98e48d4bd27db50d66aa4335b0329f9",
+      "bytes": 29222
+    },
+    "retail.js": {
+      "sha256": "72078dd1cf9977481d097ec895d78947d04babac8eddeed0751e68ff3eee4e92",
+      "bytes": 41889
+    },
+    "importers.js": {
+      "sha256": "b174551e27261bbec770ea06e3db91d976e437292c2b29753f512fcda0cd35dc",
+      "bytes": 20907
+    },
+    "portal.html": {
+      "sha256": "7f9fdc428389ce3341b23f3f605e6e3d3774ce997cf306cfaf3f55a3a2f9c1c7",
+      "bytes": 4638
+    },
+    "portal.js": {
+      "sha256": "0200af063f8ac2aab3046cf131f89315786ed6f9d9f0093aae476bc3c2720c6f",
+      "bytes": 36603
+    },
+    "tienda.html": {
+      "sha256": "551d00819f44d465be1ac8841f9be2d42babd82f89c1f49f4dec6c32b462b778",
+      "bytes": 12509
+    },
+    "tienda.js": {
+      "sha256": "168b0e761d3a8b27eb4cb878fc48eee230534378ee128da523eb1f547b589470",
+      "bytes": 28477
+    },
+    "styles.css": {
+      "sha256": "621cfb0cbb29909d7289841315487a63a96cf2861ac50312d862fa9a799d45f6",
+      "bytes": 63009
+    },
+    "operations.css": {
+      "sha256": "b3f2beb07dc75b08cc0e913ae4d1acd97a2550647aa7badb33733be8aabf947e",
+      "bytes": 17797
+    },
+    "pos.css": {
+      "sha256": "77905873b3a5ccf874503f90975a7ff589d22700dfae0b5c110de40c57a18e87",
+      "bytes": 9604
+    },
+    "retail.css": {
+      "sha256": "1eb795716cf4a7765aded2495b79d9c5100c9b39b300a8d35d6257803abb0fc7",
+      "bytes": 7613
+    },
+    "portal.css": {
+      "sha256": "84ab578ec4d5843d988c5aa99adc7b3cc4d12a7a3763490c093e3e19c6d7f0cf",
+      "bytes": 22665
+    },
+    "tienda.css": {
+      "sha256": "c0db36b4e9294b365e7651dde62923c499c8ba6cee82a903e302e0a6251b22f0",
+      "bytes": 36434
+    },
+    "import-schema.json": {
+      "sha256": "929dd96921c1a3e34a776a81920be859433897f29737bfbd1528fa2c444ae51d",
+      "bytes": 20833
+    },
+    "supabase/functions/siascloud-erp/index.ts": {
+      "sha256": "2815f2aebb2e856a43cc33ba54018e428b2a52d4c2f7dda46fd55e3569c89ed5",
+      "bytes": 227690
+    },
+    "MIGRACION_3_2_16_A_3_3_0.sql": {
+      "sha256": "0ff797384494443dc135f169b01663d825dc13a304842ac0e210bc9dabae0826",
+      "bytes": 4125
+    },
+    "SQL_MAESTRO_SIASCLOUD_V3_3_0.sql": {
+      "sha256": "df2aca9c1b43e483261debf120b756c25d5bb64512f72d81f80e285092d6439a",
+      "bytes": 385419
+    }
+  }
+}

@@ -504,6 +504,7 @@
             <h3>${esc(x.name)}</h3>
             <span class="product-price">${money(x.portal_price)}</span>
             <small>Stock referencial: ${Number(x.stock_total||0).toLocaleString("es-CL")}</small>
+            <button type="button" class="product-view-button" data-product-image="${x.id}">Ver</button>
             <button data-add="${x.id}" ${Number(x.stock_total||0)<=0?"disabled":""}>${Number(x.stock_total||0)>0?"Agregar al carrito":"Sin stock"}</button>
           </div>
         </article>`).join("") || '<div class="card empty">No se encontraron productos.</div>';
@@ -513,6 +514,8 @@
         addCart(b.dataset.add);
         setTimeout(()=>setButtonBusy(b,false),320);
       });
+      const openImage=(el)=>{const p=rows.find(x=>x.id===el.dataset.productImage);if(!p)return;const images=[...new Set((Array.isArray(p.images)&&p.images.length?p.images:[p.image_url||'siascloud-logo.png']).filter(Boolean))];modal(`Imágenes · ${p.name}`,`<div class="portal-product-album"><div class="portal-album-stage"><button type="button" class="portal-album-arrow prev" id="portalAlbumPrev" aria-label="Imagen anterior">‹</button><img id="portalAlbumMain" src="${esc(images[0])}" alt="${esc(p.name)}"><button type="button" class="portal-album-arrow next" id="portalAlbumNext" aria-label="Siguiente imagen">›</button><span id="portalAlbumCount" class="portal-album-count">1 / ${images.length}</span></div><div class="portal-album-thumbs">${images.map((url,i)=>`<button type="button" class="portal-album-thumb ${i===0?'active':''}" data-portal-album-index="${i}"><img src="${esc(url)}" alt="Vista ${i+1} de ${esc(p.name)}"></button>`).join('')}</div><div class="portal-product-image-meta"><strong>${esc(p.name)}</strong><span>${esc(p.sku||p.category||`${images.length} imágenes`)}</span></div></div>`);let index=0;const main=$('#portalAlbumMain'),count=$('#portalAlbumCount'),thumbs=$$('[data-portal-album-index]');const show=i=>{index=(i+images.length)%images.length;main.src=images[index];count.textContent=`${index+1} / ${images.length}`;thumbs.forEach((b,n)=>b.classList.toggle('active',n===index));};thumbs.forEach(b=>b.onclick=()=>show(Number(b.dataset.portalAlbumIndex)));$('#portalAlbumPrev')?.addEventListener('click',()=>show(index-1));$('#portalAlbumNext')?.addEventListener('click',()=>show(index+1));};
+      $$("[data-product-image]").forEach(el=>{el.onclick=e=>{e.preventDefault();e.stopPropagation();openImage(el);};el.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openImage(el);}};});
     };
 
     draw("");

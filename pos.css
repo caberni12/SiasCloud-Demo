@@ -10,3 +10,11 @@
 .pos-control-heading>label{margin:0;color:var(--muted);font-size:11px}
 .pos-cashier-pill{display:inline-flex;align-items:center;gap:4px;margin-left:8px;padding:4px 8px;border-radius:999px;background:var(--surface);border:1px solid var(--border);color:var(--text);font-size:11px}.pos-cashier-pill strong{font-size:11px}
 @media(max-width:440px){.pos-cashier-pill{margin-left:0;flex-basis:auto}}
+
+/* v3.2.9 · botón Ver independiente de la compra rápida */
+.pos-reference .pos-product{cursor:pointer}
+.pos-reference .pos-product.is-disabled{opacity:.58;pointer-events:none}
+.pos-product-view{position:absolute;top:38px;right:7px;z-index:3;border:1px solid #d8e3ef;border-radius:7px;background:#fffffff2;color:#1d5f91;padding:4px 8px;font-size:9px;font-weight:800;box-shadow:0 3px 10px #17395518}
+.pos-product-view:hover{background:#edf6ff}
+.pos-product-view:focus-visible{outline:2px solid var(--pos-blue);outline-offset:1px}
+@media(max-width:440px){.pos-product-view{top:36px;right:5px;padding:4px 7px}}

@@ -1,0 +1,19 @@
+SIASCLOUD 3.3.0 · CONSOLIDACIÓN DE PRODUCCIÓN
+============================================
+
+Incluye en una sola base estable los cambios funcionales acumulados en 3.2.x:
+- Maestro de Productos con eliminación segura y protección de trazabilidad.
+- Galería de imágenes por producto, imagen principal y álbum adicional.
+- POS con compra rápida protegida y continuidad de operación ante recargas.
+- Persistencia de borradores/operaciones recuperables del ERP.
+- DTE con auditoría de teléfono y reutilización del documento ya emitido.
+- Tienda pública renovada: carrusel, tarjetas, galería, redes, WhatsApp y solicitudes.
+- Portal mayorista con imágenes/galería y flujo comercial existente.
+- Branding administrable, autoencuadre de logos y mejoras de visualización.
+- Campana de notificaciones con apertura inmediata y actualización en segundo plano.
+- Cache-busting y versiones frontend/backend unificadas en 3.3.0.
+
+OBJETIVO DE ESTA RELEASE
+- Eliminar la dependencia de hotfix sueltos.
+- Entregar un único paquete desplegable.
+- Reducir errores por mezclar versiones o SQL parciales.

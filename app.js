@@ -92,6 +92,76 @@
   const viewStamp=()=>({revision:state.viewRevision,route:state.route,company:state.me?.companyId,token:state.token});
   const sameView=s=>s.revision===state.viewRevision&&s.route===state.route&&s.company===state.me?.companyId&&s.token===state.token;
 
+
+  const DRAFT_PREFIX="sias_draft_v2";
+  const DRAFT_MAX_AGE=14*24*60*60*1000;
+  const draftScope=()=>`${state.me?.companyId||"none"}:${state.me?.user?.id||"anon"}`;
+  function draftKey(kind,id=""){return `${DRAFT_PREFIX}:${draftScope()}:${String(kind||"general")}:${String(id||"default")}`;}
+  function saveDraft(key,data){if(!key||!state.me)return;try{localStorage.setItem(key,JSON.stringify({saved_at:Date.now(),route:state.route,data}))}catch{}}
+  function loadDraft(key){if(!key)return null;try{const raw=localStorage.getItem(key);if(!raw)return null;const box=JSON.parse(raw);if(!box||Date.now()-Number(box.saved_at||0)>DRAFT_MAX_AGE){localStorage.removeItem(key);return null;}return box.data??null;}catch{return null;}}
+  function clearDraft(key){if(key)try{localStorage.removeItem(key)}catch{}}
+  function isSensitiveControl(el){
+    if(!el||!el.name||el.disabled)return true;
+    const type=String(el.type||"").toLowerCase(),auto=String(el.autocomplete||"").toLowerCase(),name=String(el.name||"").toLowerCase();
+    return type==="password"||type==="file"||auto.includes("password")||/(password|clave|secret|token|credential|api[_-]?key|^confirm_|^accept_|acknowledge|approval)/.test(name);
+  }
+  function serializeFormDraft(form){
+    const out={},controls=[...form.elements];
+    controls.forEach(el=>{
+      if(isSensitiveControl(el))return;
+      const type=String(el.type||"").toLowerCase(),same=controls.filter(x=>x.name===el.name&&!isSensitiveControl(x));
+      if(type==="radio"){if(el.checked)out[el.name]={type:"radio",value:el.value};return;}
+      if(type==="checkbox"&&same.length>1){if(!out[el.name])out[el.name]={type:"checkbox-group",value:[]};if(el.checked)out[el.name].value.push(el.value);return;}
+      if(type==="checkbox"){out[el.name]={type,checked:el.checked,value:el.value};return;}
+      if(el.tagName==="SELECT"&&el.multiple){out[el.name]={type:"select-multiple",value:[...el.selectedOptions].map(o=>o.value)};return;}
+      out[el.name]={type,value:el.value};
+    });
+    return out;
+  }
+  function restoreFormDraft(form,data){
+    if(!data||typeof data!=="object")return;
+    [...form.elements].forEach(el=>{
+      if(isSensitiveControl(el)||!Object.prototype.hasOwnProperty.call(data,el.name))return;
+      const item=data[el.name]||{},type=String(el.type||"").toLowerCase();
+      if(type==="radio")el.checked=String(el.value)===String(item.value);
+      else if(type==="checkbox"&&item.type==="checkbox-group")el.checked=new Set(Array.isArray(item.value)?item.value:[]).has(el.value);
+      else if(type==="checkbox")el.checked=Boolean(item.checked);
+      else if(el.tagName==="SELECT"&&el.multiple){const set=new Set(Array.isArray(item.value)?item.value:[]);[...el.options].forEach(o=>o.selected=set.has(o.value));}
+      else if(item.value!==undefined)el.value=item.value;
+      el.dispatchEvent(new Event("input",{bubbles:true}));
+      el.dispatchEvent(new Event("change",{bubbles:true}));
+    });
+  }
+  let draftTimer=null;
+  function modalDraftId(title){
+    const hiddenId=$("#modalBody input[name='id']")?.value||"";
+    return `${state.route}:${title}:${hiddenId||"new"}`;
+  }
+  function initModalDraft(title){
+    const hasSensitive=$$("#modalForm input[type='password']").length>0;
+    const hasEditable=[...modalForm.elements].some(el=>el.name&&!isSensitiveControl(el));
+    delete modal.dataset.draftKey;delete modal.dataset.extraDraftKey;
+    if(hasSensitive||!hasEditable)return;
+    const key=draftKey("modal",modalDraftId(title));
+    modal.dataset.draftKey=key;
+    const saved=loadDraft(key);
+    if(saved)queueMicrotask(()=>{if(modal.open&&modal.dataset.draftKey===key)restoreFormDraft(modalForm,saved);});
+  }
+  function saveActiveModalDraft(){
+    const key=modal?.dataset?.draftKey;if(!key||!modal.open)return;
+    clearTimeout(draftTimer);draftTimer=setTimeout(()=>saveDraft(key,serializeFormDraft(modalForm)),100);
+  }
+  function attachModalDraft(key){if(modal?.open&&key)modal.dataset.extraDraftKey=key;}
+  function contentFormKey(form){return form?.id?draftKey("form",`${state.route}:${form.id}`):"";}
+  function initContentFormDraft(form){
+    if(!form?.id||["serverForm","setupForm","loginForm","modalForm"].includes(form.id))return;
+    if(form.querySelector('input[type="password"]'))return;
+    const key=contentFormKey(form),saved=loadDraft(key);
+    form.dataset.siasDraftKey=key;
+    if(saved)restoreFormDraft(form,saved);
+  }
+  function clearContentFormDraft(form){clearDraft(form?.dataset?.siasDraftKey||contentFormKey(form));}
+
   function serverUrl(){ return (cfg.functionsBaseUrl || localStorage.getItem("sias_functions_url") || "").replace(/\/$/, ""); }
   function endpoint(sii=false){ const base=serverUrl(); if(!base) throw new Error("SERVIDOR_NO_CONFIGURADO"); return `${base}/${sii ? (cfg.siiFunction||"siascloud-sii") : (cfg.systemFunction||"siascloud-system")}`; }
   function erpEndpoint(){ const base=serverUrl(); if(!base) throw new Error("SERVIDOR_NO_CONFIGURADO"); return `${base}/${cfg.erpFunction||"siascloud-erp"}`; }
@@ -222,7 +292,13 @@
   }
   async function refreshNotificationBell(openDropdown=false){
     const bell=$("#notificationBell"),drop=$("#notificationDropdown"),badge=$("#notificationBadge");
-    if(!bell||!drop||!badge||state.notificationBusy)return;
+    if(!bell||!drop||!badge)return;
+    if(state.notificationBusy){
+      // Si el usuario pulsa la campana mientras corre el refresco automático,
+      // abrimos el último contenido disponible en vez de ignorar el clic.
+      if(openDropdown){drop.classList.remove("hidden");bell.setAttribute("aria-expanded","true");}
+      return;
+    }
     const allowed=can("NOTIFICATION_VIEW")&&!state.me?.user?.must_change_password;
     bell.classList.toggle("hidden",!allowed); if(!allowed){drop.classList.add("hidden");return;}
     state.notificationBusy=true;
@@ -359,7 +435,25 @@
   $("#changePasswordBtn")?.addEventListener("click",()=>passwordModal(false));
   $("#profileBtn")?.addEventListener("click",()=>profileModal());
   $("#sessionUser")?.addEventListener("click",()=>profileModal());
-  $("#notificationBell")?.addEventListener("click",async e=>{e.stopPropagation();const b=e.currentTarget,drop=$("#notificationDropdown"),open=drop.classList.contains("hidden");if(!open){drop.classList.add("hidden");b.setAttribute("aria-expanded","false");return;}setBusy(b,true,"Cargando…");try{await refreshNotificationBell(true);}finally{if(b.isConnected)setBusy(b,false);}});
+  $("#notificationBell")?.addEventListener("click",e=>{
+    e.stopPropagation();
+    const b=e.currentTarget,drop=$("#notificationDropdown"),open=drop.classList.contains("hidden");
+    if(!open){drop.classList.add("hidden");b.setAttribute("aria-expanded","false");return;}
+
+    // Abrir inmediatamente con el último contenido disponible.
+    // La red nunca bloquea la apertura de la campana.
+    if(!drop.innerHTML.trim())drop.innerHTML='<div class="empty notification-quick-loading">Actualizando notificaciones…</div>';
+    drop.classList.remove("hidden");
+    b.setAttribute("aria-expanded","true");
+
+    // Refresco silencioso en segundo plano. Si ya existe un refresco automático,
+    // refreshNotificationBell() reutiliza el contenido actual sin bloquear al usuario.
+    Promise.resolve(refreshNotificationBell(false)).catch(err=>{
+      console.warn("No se pudo actualizar la campana",err);
+      if(drop.querySelector(".notification-quick-loading"))
+        drop.innerHTML='<div class="empty">No fue posible actualizar las notificaciones.</div>';
+    });
+  });
   document.addEventListener("click",e=>{const wrap=$(".notification-menu-wrap");if(wrap&&!wrap.contains(e.target)){ $("#notificationDropdown")?.classList.add("hidden");$("#notificationBell")?.setAttribute("aria-expanded","false"); }});
   window.addEventListener("focus",()=>{if(state.token&&state.me)refreshNotificationBell();});
   document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible"&&state.token&&state.me)refreshNotificationBell();});
@@ -370,10 +464,20 @@
     const save=$("#modalActions .primary");
     $("#modalTitle").textContent=title; $("#modalBody").innerHTML=html; save.textContent=saveLabel; save.type="submit"; save.onclick=null; modalHandler=handler;
     modal.dataset.locked=locked?"1":"0"; $("#modalClose").classList.toggle("hidden",locked); $("#modalCancel").classList.toggle("hidden",locked); modal.showModal();
+    initModalDraft(title);
   }
-  function closeModal(force=false){ if(!force&&modal.dataset.submitting==="1")return; if(modal.dataset.locked==="1"&&!force)return; modal.close(); modalHandler=null; modal.dataset.locked="0"; }
+  function closeModal(force=false,preserveDraft=false){
+    if(!force&&modal.dataset.submitting==="1")return;if(modal.dataset.locked==="1"&&!force)return;
+    if(!preserveDraft){clearDraft(modal.dataset.draftKey);clearDraft(modal.dataset.extraDraftKey);}
+    clearTimeout(draftTimer);modal.close();modalHandler=null;modal.dataset.locked="0";delete modal.dataset.draftKey;delete modal.dataset.extraDraftKey;
+  }
   $("#modalClose").addEventListener("click",()=>closeModal()); $("#modalCancel").addEventListener("click",()=>closeModal());
-  modal.addEventListener("cancel",e=>{if(modal.dataset.locked==="1"||modal.dataset.submitting==="1")e.preventDefault()});
+  modal.addEventListener("cancel",e=>{if(modal.dataset.locked==="1"||modal.dataset.submitting==="1")e.preventDefault();else{e.preventDefault();closeModal();}});
+  modalForm.addEventListener("input",saveActiveModalDraft,true);modalForm.addEventListener("change",saveActiveModalDraft,true);
+  const contentDraftObserver=new MutationObserver(()=>{$$("#content form[id]").forEach(form=>{if(form.dataset.siasDraftReady!=="1"){form.dataset.siasDraftReady="1";initContentFormDraft(form);}})});
+  contentDraftObserver.observe($("#content"),{childList:true,subtree:true});
+  const saveContentDraft=e=>{const form=e.target?.closest?.("#content form[id]");if(!form||!form.dataset.siasDraftKey)return;saveDraft(form.dataset.siasDraftKey,serializeFormDraft(form));};
+  document.addEventListener("input",saveContentDraft,true);document.addEventListener("change",saveContentDraft,true);
   modalForm.addEventListener("submit",async e=>{
     e.preventDefault();if(!modalHandler||modal.dataset.submitting==="1")return;
     const handler=modalHandler,btn=$("#modalActions .primary");modal.dataset.submitting="1";setBusy(btn,true);
@@ -391,35 +495,60 @@
     return await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>{try{const max=720,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)),w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale)),canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;const ctx=canvas.getContext("2d");ctx.fillStyle="#fff";ctx.fillRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);resolve(canvas.toDataURL("image/jpeg",.88));}catch(e){reject(e)}};img.onerror=()=>reject(new Error("La imagen seleccionada no es válida"));img.src=src;});
   }
   function bindProfilePreview(){const input=$("#profilePhotoInput"),preview=$("#profilePhotoPreview"),placeholder=$("#profilePhotoPlaceholder"),remove=$("#profilePhotoRemove");input?.addEventListener("change",()=>{const f=input.files?.[0];if(!f)return;const url=URL.createObjectURL(f);if(preview){preview.src=url;preview.classList.remove("hidden")}placeholder?.classList.add("hidden");if(remove)remove.checked=false;});remove?.addEventListener("change",()=>{if(remove.checked){preview?.classList.add("hidden");placeholder?.classList.remove("hidden")}});}
-  async function prepareCompanyLogo(file){
+  async function prepareCompanyLogo(file,zoom=1.06){
     if(!(file instanceof File)||!file.size)return null;
-    if(file.size>3*1024*1024)throw new Error("El logotipo no puede superar 3 MB");
+    if(file.size>8*1024*1024)throw new Error("El logotipo no puede superar 8 MB antes de optimizarse");
+    zoom=Math.max(1,Math.min(1.65,Number(zoom)||1.06));
     const src=await fileToDataUrl(file);
     return await new Promise((resolve,reject)=>{
       const img=new Image();
       img.onload=()=>{
         try{
           if(!img.naturalWidth||!img.naturalHeight)throw new Error("IMAGEN_INVALIDA");
-          const max=1200,scale=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight));
-          const w=Math.max(1,Math.round(img.naturalWidth*scale)),h=Math.max(1,Math.round(img.naturalHeight*scale));
-          const canvas=document.createElement("canvas");canvas.width=w;canvas.height=h;
-          const ctx=canvas.getContext("2d",{alpha:true});if(!ctx)throw new Error("CANVAS_NO_DISPONIBLE");
-          ctx.clearRect(0,0,w,h);ctx.drawImage(img,0,0,w,h);
-          let out=canvas.toDataURL("image/webp",.92);
-          if(!out.startsWith("data:image/webp;base64,"))out=canvas.toDataURL("image/png");
-          const approx=Math.ceil((out.length-(out.indexOf(',')+1))*3/4);
-          if(approx>3*1024*1024)throw new Error("LOGO_RESULTANTE_MUY_GRANDE");
+          const scanMax=1400,scanScale=Math.min(1,scanMax/Math.max(img.naturalWidth,img.naturalHeight));
+          const sw=Math.max(1,Math.round(img.naturalWidth*scanScale)),sh=Math.max(1,Math.round(img.naturalHeight*scanScale));
+          const scan=document.createElement("canvas");scan.width=sw;scan.height=sh;
+          const sctx=scan.getContext("2d",{willReadFrequently:true,alpha:true});if(!sctx)throw new Error("CANVAS_NO_DISPONIBLE");
+          sctx.clearRect(0,0,sw,sh);sctx.drawImage(img,0,0,sw,sh);
+          const data=sctx.getImageData(0,0,sw,sh).data;
+          const corner=(x,y)=>{const i=(y*sw+x)*4;return [data[i],data[i+1],data[i+2],data[i+3]]};
+          const cs=[corner(0,0),corner(sw-1,0),corner(0,sh-1),corner(sw-1,sh-1)];
+          const bg=[0,0,0,0];for(const c of cs){for(let k=0;k<4;k++)bg[k]+=c[k]/4;}
+          const alphaBg=bg[3]<40;
+          let minX=sw,minY=sh,maxX=-1,maxY=-1;
+          const step=Math.max(1,Math.floor(Math.max(sw,sh)/900));
+          for(let y=0;y<sh;y+=step){for(let x=0;x<sw;x+=step){const i=(y*sw+x)*4,a=data[i+3];let fg=false;if(alphaBg){fg=a>28;}else if(a>24){const dr=data[i]-bg[0],dg=data[i+1]-bg[1],db=data[i+2]-bg[2];const dist=Math.sqrt(dr*dr+dg*dg+db*db);const chroma=Math.max(data[i],data[i+1],data[i+2])-Math.min(data[i],data[i+1],data[i+2]);fg=dist>31||chroma>34;}if(fg){if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;}}}
+          if(maxX<minX||maxY<minY){minX=0;minY=0;maxX=sw-1;maxY=sh-1;}
+          const inv=1/scanScale;let x=minX*inv,y=minY*inv,w=(maxX-minX+1)*inv,h=(maxY-minY+1)*inv;
+          const pad=Math.max(8,Math.round(Math.max(w,h)*.07));x=Math.max(0,x-pad);y=Math.max(0,y-pad);w=Math.min(img.naturalWidth-x,w+pad*2);h=Math.min(img.naturalHeight-y,h+pad*2);
+          const zw=w/zoom,zh=h/zoom;x+=Math.max(0,(w-zw)/2);y+=Math.max(0,(h-zh)/2);w=zw;h=zh;
+          const maxOut=1000,scale=Math.min(1,maxOut/Math.max(w,h)),ow=Math.max(1,Math.round(w*scale)),oh=Math.max(1,Math.round(h*scale));
+          const canvas=document.createElement("canvas");canvas.width=ow;canvas.height=oh;const ctx=canvas.getContext("2d",{alpha:true});if(!ctx)throw new Error("CANVAS_NO_DISPONIBLE");
+          ctx.clearRect(0,0,ow,oh);const radius=Math.max(8,Math.min(ow,oh)*.075);ctx.beginPath();ctx.moveTo(radius,0);ctx.arcTo(ow,0,ow,oh,radius);ctx.arcTo(ow,oh,0,oh,radius);ctx.arcTo(0,oh,0,0,radius);ctx.arcTo(0,0,ow,0,radius);ctx.closePath();ctx.clip();ctx.drawImage(img,x,y,w,h,0,0,ow,oh);
+          // Quita únicamente el fondo conectado a los bordes. Así un lienzo blanco queda transparente
+          // sin borrar detalles blancos/plata internos del logotipo.
+          if(!alphaBg){
+            const image=ctx.getImageData(0,0,ow,oh),px=image.data,seen=new Uint8Array(ow*oh),queue=new Int32Array(ow*oh);let head=0,tail=0;
+            const threshold=44,nearBg=i=>{const dr=px[i]-bg[0],dg=px[i+1]-bg[1],db=px[i+2]-bg[2];return px[i+3]>0&&Math.sqrt(dr*dr+dg*dg+db*db)<=threshold;};
+            const push=(xx,yy)=>{if(xx<0||yy<0||xx>=ow||yy>=oh)return;const pos=yy*ow+xx;if(seen[pos])return;const i=pos*4;if(!nearBg(i))return;seen[pos]=1;queue[tail++]=pos;};
+            for(let xx=0;xx<ow;xx++){push(xx,0);push(xx,oh-1)}for(let yy=0;yy<oh;yy++){push(0,yy);push(ow-1,yy)}
+            while(head<tail){const pos=queue[head++],xx=pos%ow,yy=(pos/ow)|0,i=pos*4;px[i+3]=0;push(xx-1,yy);push(xx+1,yy);push(xx,yy-1);push(xx,yy+1)}
+            ctx.putImageData(image,0,0);
+          }
+          let out=canvas.toDataURL("image/webp",.93);if(!out.startsWith("data:image/webp;base64,"))out=canvas.toDataURL("image/png");
+          const approx=Math.ceil((out.length-(out.indexOf(',')+1))*3/4);if(approx>3*1024*1024)throw new Error("LOGO_RESULTANTE_MUY_GRANDE");
           resolve(out);
         }catch(err){reject(err)}
       };
-      img.onerror=()=>reject(new Error("El archivo no contiene una imagen JPG, PNG o WebP válida"));
-      img.src=src;
+      img.onerror=()=>reject(new Error("El archivo no contiene una imagen JPG, PNG o WebP válida"));img.src=src;
     }).catch(err=>{if(String(err?.message||err).includes("MUY_GRANDE"))throw new Error("El logotipo optimizado supera 3 MB. Usa una imagen más pequeña.");throw err;});
   }
   function bindCompanyLogoPreview(){
-    const input=$("#companyLogoInput"),preview=$("#companyLogoPreview"),fallback=$("#companyLogoFallback"),remove=$("#companyLogoRemove"),meta=$("#companyLogoMeta");
-    input?.addEventListener("change",()=>{const f=input.files?.[0];if(!f)return;const url=URL.createObjectURL(f);if(preview){preview.src=url;preview.classList.remove("hidden")}fallback?.classList.add("hidden");if(remove)remove.checked=false;if(meta)meta.textContent=`${f.name} · ${(f.size/1024).toFixed(0)} KB`;});
-    remove?.addEventListener("change",()=>{if(remove.checked){preview?.classList.add("hidden");fallback?.classList.remove("hidden");if(meta)meta.textContent="Se quitará el logotipo actual";}});
+    const input=$("#companyLogoInput"),preview=$("#companyLogoPreview"),fallback=$("#companyLogoFallback"),remove=$("#companyLogoRemove"),meta=$("#companyLogoMeta"),zoom=$("#companyLogoZoom");
+    let ticket=0;
+    const update=async()=>{const f=input?.files?.[0];if(!f)return;const mine=++ticket;if(meta)meta.textContent="Optimizando y recortando márgenes…";try{const out=await prepareCompanyLogo(f,zoom?.value||1.06);if(mine!==ticket)return;if(preview){preview.src=out;preview.classList.remove("hidden")}fallback?.classList.add("hidden");if(remove)remove.checked=false;if(meta)meta.textContent=`${f.name} · encuadre ${Math.round(Number(zoom?.value||1.06)*100)}% · márgenes recortados automáticamente`;}catch(err){if(meta)meta.textContent=String(err?.message||err);}};
+    input?.addEventListener("change",update);zoom?.addEventListener("input",update);
+    remove?.addEventListener("change",()=>{if(remove.checked){preview?.classList.add("hidden");fallback?.classList.remove("hidden");if(meta)meta.textContent="Se quitará el logotipo actual"}});
   }
   function profileModal(){
     const u=state.me.user||{},initials=userInitials(u),hasPhoto=Boolean(u.profile_photo_url);
@@ -439,10 +568,10 @@
   function companyModal(x){
     x=x||{};
     const companyName=x.trade_name||x.legal_name||"Empresa",initials=companyName.split(/\s+/).filter(Boolean).slice(0,2).map(v=>v[0]).join("").toUpperCase()||"EM";
-    openModal(x.id?"Editar empresa":"Nueva empresa",`<div class="form-grid"><input type="hidden" name="id" value="${esc(x.id||"")}"><label>RUT<input name="rut" value="${esc(x.rut||"")}"></label><label>Razón social<input name="legal_name" required value="${esc(x.legal_name||"")}"></label><label>Nombre fantasía<input name="trade_name" value="${esc(x.trade_name||"")}"></label><label>Giro<input name="business_activity" value="${esc(x.business_activity||"")}"></label><label class="full">Dirección<input name="address" value="${esc(x.address||"")}"></label><label>Comuna<input name="commune" value="${esc(x.commune||"")}"></label><label>Ciudad<input name="city" value="${esc(x.city||"")}"></label><label>Región<input name="region" value="${esc(x.region||"")}"></label><label>Teléfono<input name="phone" value="${esc(x.phone||"")}"></label><label>Correo<input name="email" type="email" value="${esc(x.email||"")}"></label><label>Web<input name="website" value="${esc(x.website||"")}"></label><div class="full company-logo-editor"><div class="company-logo-preview-wrap"><img id="companyLogoPreview" class="company-logo-preview ${x.logo_url?'':'hidden'}" src="${esc(x.logo_url||'')}" alt="Logotipo de la empresa"><div id="companyLogoFallback" class="company-logo-fallback ${x.logo_url?'hidden':''}">${esc(initials)}</div></div><div class="company-logo-copy"><strong>Logotipo de la empresa</strong><label class="btn secondary small company-logo-upload">Seleccionar imagen<input id="companyLogoInput" name="logo_file" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"></label><small id="companyLogoMeta">PNG, JPG/JPEG o WebP · máximo 3 MB. SiasCloud valida el contenido real y lo optimiza automáticamente.</small>${x.logo_url?'<label class="switch-row"><input id="companyLogoRemove" name="logo_remove" type="checkbox"> Quitar logotipo actual</label>':''}</div></div><label class="toggle-card full"><input name="show_logo_documents" type="checkbox" ${x.show_logo_documents!==false?"checked":""}><span><strong>Mostrar logotipo en documentos</strong><small>Aplica a documentos internos y formatos A4/80/58 generados por SiasCloud. El PDF A4 oficial de Facturacion.cl no se modifica.</small></span></label><label class="switch"><input name="active" type="checkbox" ${x.active!==false?"checked":""}> Empresa activa</label></div>`,async fd=>{
+    openModal(x.id?"Editar empresa":"Nueva empresa",`<div class="form-grid"><input type="hidden" name="id" value="${esc(x.id||"")}"><label>RUT<input name="rut" value="${esc(x.rut||"")}"></label><label>Razón social<input name="legal_name" required value="${esc(x.legal_name||"")}"></label><label>Nombre fantasía<input name="trade_name" value="${esc(x.trade_name||"")}"></label><label>Giro<input name="business_activity" value="${esc(x.business_activity||"")}"></label><label class="full">Dirección<input name="address" value="${esc(x.address||"")}"></label><label>Comuna<input name="commune" value="${esc(x.commune||"")}"></label><label>Ciudad<input name="city" value="${esc(x.city||"")}"></label><label>Región<input name="region" value="${esc(x.region||"")}"></label><label>Teléfono<input name="phone" value="${esc(x.phone||"")}"></label><label>Correo<input name="email" type="email" value="${esc(x.email||"")}"></label><label>Web<input name="website" value="${esc(x.website||"")}"></label><div class="full company-logo-editor"><div class="company-logo-preview-wrap"><img id="companyLogoPreview" class="company-logo-preview ${x.logo_url?'':'hidden'}" src="${esc(x.logo_url||'')}" alt="Logotipo de la empresa"><div id="companyLogoFallback" class="company-logo-fallback ${x.logo_url?'hidden':''}">${esc(initials)}</div></div><div class="company-logo-copy"><strong>Logotipo de la empresa</strong><label class="btn secondary small company-logo-upload">Seleccionar imagen<input id="companyLogoInput" name="logo_file" type="file" accept="image/*,.png,.jpg,.jpeg,.webp"></label><small id="companyLogoMeta">SiasCloud recorta márgenes vacíos y redondea suavemente el logo antes de guardarlo.</small><label class="company-logo-zoom">Encuadre <input id="companyLogoZoom" type="range" min="1" max="1.65" step="0.05" value="1.06"><span>Acerca el contenido si aún queda pequeño</span></label>${x.logo_url?'<label class="switch-row"><input id="companyLogoRemove" name="logo_remove" type="checkbox"> Quitar logotipo actual</label>':''}</div></div><label class="toggle-card full"><input name="show_logo_documents" type="checkbox" ${x.show_logo_documents!==false?"checked":""}><span><strong>Mostrar logotipo en documentos</strong><small>Aplica a documentos internos y formatos A4/80/58 generados por SiasCloud. El PDF A4 oficial de Facturacion.cl no se modifica.</small></span></label><label class="switch"><input name="active" type="checkbox" ${x.active!==false?"checked":""}> Empresa activa</label></div>`,async fd=>{
       const o=Object.fromEntries([...fd].filter(([k])=>k!=="logo_file"));
       o.active=fd.get("active")==="on";o.show_logo_documents=fd.get("show_logo_documents")==="on";o.logo_url=x.logo_url||null;o.logo_remove=fd.get("logo_remove")==="on";
-      const file=fd.get("logo_file");if(file instanceof File&&file.size)o.logo_data=await prepareCompanyLogo(file);
+      const file=fd.get("logo_file");if(file instanceof File&&file.size)o.logo_data=await prepareCompanyLogo(file,$("#companyLogoZoom")?.value||1.06);
       await call("companies.save",o);const me=await call("me");state.me=me;refreshCompanyIdentity();
     });
     bindCompanyLogoPreview();
@@ -1021,9 +1150,9 @@
   window.SiasDtePdf.init({erpCall,state,toast,errorText,setBusy});
 
   window.addEventListener("hashchange",()=>{const r=location.hash.replace('#','');if(r&&r!==state.route)navigate(r)});
-  window.SiasOperations.init({erpCall,call,can,state,navigate,render,openModal,closeModal,money,fmtQty,fmtDate,toast,errorText,setBusy,icon,fileToBase64,inventoryMovementChart,stockAdjustModal,supplierModal,billingConfigModal,billingCredentialsModal,billingTestModal,openExternalPdf,issueAndOpenPdf});
+  window.SiasOperations.init({erpCall,call,can,state,navigate,render,openModal,closeModal,money,fmtQty,fmtDate,toast,errorText,setBusy,icon,fileToBase64,prepareCompanyLogo,inventoryMovementChart,stockAdjustModal,supplierModal,billingConfigModal,billingCredentialsModal,billingTestModal,openExternalPdf,issueAndOpenPdf,draftKey,saveDraft,loadDraft,clearDraft,attachModalDraft,serializeFormDraft,restoreFormDraft,initContentFormDraft,clearContentFormDraft});
   window.SiasImporters.init({erpCall,can,state,navigate,money,fmtDate,toast,errorText,setBusy});
-  window.SiasRetail.init({erpCall,call,can,state,navigate,render,openModal,closeModal,customerModal,money,fmtQty,fmtDate,toast,errorText,setBusy,icon});
+  window.SiasRetail.init({erpCall,call,can,state,navigate,render,openModal,closeModal,customerModal,money,fmtQty,fmtDate,toast,errorText,setBusy,icon,draftKey,saveDraft,loadDraft,clearDraft,attachModalDraft,serializeFormDraft,restoreFormDraft});
   bindPasswordToggles();
   boot();
 })();

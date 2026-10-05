@@ -1,0 +1,29 @@
+SIASCLOUD 3.3.0 · QA DE CONSOLIDACIÓN
+=====================================
+Fecha de consolidación: 2026-10-05
+Base: 3.2.16 + Tienda limpia
+
+VALIDACIONES EJECUTADAS
+[OK] Sintaxis de todos los JavaScript del root mediante node --check.
+[OK] JSON parseable: import-schema.json y RELEASE_MANIFEST_3_3_0.json.
+[OK] index.html, portal.html y tienda.html sin IDs duplicados.
+[OK] Referencias locales CSS/JS de los tres HTML apuntan a archivos existentes.
+[OK] Balance estructural de llaves en todos los CSS.
+[OK] index.ts parsea y transpila con TypeScript 5.8.3.
+[OK] tsc no reporta errores de sintaxis ni identificadores duplicados; sólo dependencias Deno/npm no resolubles fuera del runtime Supabase.
+[OK] Todas las acciones literales usadas por app/operations/POS/retail/importadores/portal/tienda tienen ruta backend; imports.bulk.* usa dispatcher dinámico.
+[OK] Frontend, backend y manifiesto de importación alineados en versión 3.3.0.
+[OK] Cache-busting de index/portal/tienda alineado en 3.3.0-release.
+[OK] SQL maestro contiene galería de productos, redes de tienda y solicitud de contacto, y finaliza estableciendo versión 3.3.0.
+[OK] Paquete raíz sin LEEME/SQL de hotfix 3.2.x que puedan inducir un despliegue parcial.
+
+LÍMITES DE ESTA VALIDACIÓN
+- No se ejecutó emisión DTE real ni escritura sobre la base de producción desde este entorno.
+- La prueba transaccional final debe realizarse contra el proyecto Supabase del usuario después del despliegue, usando datos de prueba/certificación.
+
+ORDEN DE DESPLIEGUE RECOMENDADO
+1. MIGRACION_3_2_16_A_3_3_0.sql
+2. supabase/functions/siascloud-erp/index.ts
+3. Archivos planos GitHub
+4. Ctrl+F5 / recarga completa
+5. Smoke test: login, POS, notificaciones, productos/galería, tienda, mayorista, DTE en certificación.
