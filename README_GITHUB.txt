@@ -1,21 +1,25 @@
-SIASCLOUD 3.2.7 - GITHUB PLANO / TELEFONO DTE
+SIASCLOUD 3.2.8 - GITHUB PLANO / TELEFONO DTE
 
 Los archivos web estan en la raiz, listos para publicar en GitHub.
 No subir una carpeta contenedora: index.html debe quedar en la raiz del sitio.
 
-Esta entrega requiere actualizar frontend y backend a 3.2.7:
-1. Ejecutar ACTUALIZACION_TELEFONO_DTE_V3_2_7.sql en Supabase.
-2. Reemplazar el unico supabase/functions/siascloud-erp/index.ts en la funcion
-   existente siascloud-erp y desplegarlo. Conservar los secretos existentes.
-3. Publicar los archivos web y recargar con Ctrl+F5.
+CAMBIO 3.2.8
+- Parte de la ultima version 3.2.7 entregada.
+- Conserva intacta la emision DTE y la proteccion contra folios duplicados.
+- El telefono sigue enviandose en Receptor/Contacto para facturas y en A2 como adicional de impreso.
+- documents.list, documents.get y el portal ahora devuelven recipient_phone en los DTE relacionados.
+- El estado del portal queda alineado con la version 3.2.8.
+- Actualizar PDF consulta el PDF oficial del mismo folio; nunca llama a procesar.
 
-Subir archivos a GitHub NO actualiza el backend de Supabase.
-El SQL es idempotente y no cambia folios ni DTE anteriores.
-Para instalaciones nuevas usar SQL_MAESTRO_SIASCLOUD_V3_1_COMPLETO.sql.
+DESPLIEGUE
+1. Ejecutar ACTUALIZACION_TELEFONO_DTE_V3_2_8.sql en Supabase.
+2. Reemplazar y desplegar el unico supabase/functions/siascloud-erp/index.ts.
+   Conservar los secretos existentes de la funcion siascloud-erp.
+3. Publicar los archivos web de la raiz en GitHub y recargar con Ctrl+F5.
 
-Leer LEEME_TELEFONO_DTE_3_2_7.txt para la comprobacion del campo Telefono.
-El historial y el visor A4 muestran Telefono de emision.
-Actualizar PDF consulta el documento oficial del MISMO folio, sin reemitirlo.
-El campo del impreso de Facturacion.cl debe estar asociado a A2.
+IMPORTANTE SOBRE EL PDF OFICIAL DE FACTURACION.CL
+SiasCloud ya envia el telefono. Para que el PDF A4 oficial lo muestre, la cuenta de Facturacion.cl debe tener configurado:
+Administrador > Integracion > Configuracion > Campos de Impreso Adicional
+El campo Telefono debe estar asociado al adicional A2.
 
-Version frontend/backend: 3.2.7. Recursos web: 3.2.7-telefono1.
+Version frontend/backend: 3.2.8. Recursos web: 3.2.8-telefono2.

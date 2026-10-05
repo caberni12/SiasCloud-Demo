@@ -1,0 +1,18 @@
+SIASCLOUD 3.2.8 - TELEFONO DTE
+
+Esta revision parte de SiasCloud 3.2.7.
+
+CONFIRMADO EN EL CODIGO
+- Facturas 33/34/52/56/61: Contacto incluye nombre/telefono y A2 conserva el telefono para el impreso adicional.
+- Boletas 39/41: Contacto conserva el correo y A2 lleva el telefono.
+- El numero se guarda en sias_external_dte.recipient_phone antes de llamar a /wsds/procesar.
+- Si existe un DTE emitido, se reutiliza ese registro y no se consume otro folio.
+- La reimpresion A4 usa /wsds/obtenerpdf sobre el mismo folio.
+
+CORRECCION 3.2.8
+Algunas respuestas de documents.list, documents.get y del portal omitían recipient_phone aunque el registro DTE sí lo tenía. Ahora lo incluyen, evitando que ciertas pantallas interpreten el teléfono como ausente.
+
+PDF A4 OFICIAL
+Si SiasCloud muestra Telefono de emision pero el PDF oficial no, el dato ya llego al backend. Facturacion.cl requiere que su formato de impreso tenga A2 asociado al campo Telefono. Despues de corregir esa configuracion, usa Actualizar PDF para consultar nuevamente el mismo folio.
+
+No generar un folio nuevo para intentar completar un PDF ya emitido.
